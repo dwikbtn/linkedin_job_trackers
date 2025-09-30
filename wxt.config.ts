@@ -7,4 +7,11 @@ export default defineConfig({
   vite: () => ({
     plugins: [tailwindcss()],
   }),
+  manifest: {
+    name: "Job Logger",
+    description: "Log and track your job applications seamlessly.",
+    version: "1.0.0",
+    permissions: ["storage", "activeTab"],
+    host_permissions: ["https://*.linkedin.com/*"],
+  },
 });
