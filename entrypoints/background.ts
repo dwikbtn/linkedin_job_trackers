@@ -60,12 +60,52 @@ export default defineBackground(() => {
 });
 
 //msg listener
-onMessage("getApplications", async () => {
+onMessage(GETAPPLICATION, async () => {
   const jobApplications = (await storage.getItem(
     `local:${JOBAPPLICATIONLIST}`
   )) as Job_Application[] | undefined;
 
   return jobApplications || [];
+});
+
+onMessage("saveApplication", async (msg) => {
+  const application = msg.data;
+  const jobApplications = (await storage.getItem(
+    `local:${JOBAPPLICATIONLIST}`
+  )) as Job_Application[] | undefined;
+
+  const updatedApplications = jobApplications
+    ? [...jobApplications, application]
+    : [application];
+
+  await storage.setItem(`local:${JOBAPPLICATIONLIST}`, updatedApplications);
+});
+
+onMessage("updateApplication", async (msg) => {
+  const jobApplications = (await storage.getItem(
+    `local:${JOBAPPLICATIONLIST}`
+  )) as Job_Application[] | undefined;
+
+  const application = msg.data as Job_Application;
+
+  if (jobApplications) {
+    const updatedApplications = jobApplications.map((app) =>
+      app.id === application.id ? application : app
+    );
+    await storage.setItem(`local:${JOBAPPLICATIONLIST}`, updatedApplications);
+  }
+});
+
+onMessage("deleteApplication", async (msg) => {
+  const id = msg.data as string;
+  const jobApplications = (await storage.getItem(
+    `local:${JOBAPPLICATIONLIST}`
+  )) as Job_Application[] | undefined;
+
+  if (jobApplications) {
+    const updatedApplications = jobApplications.filter((app) => app.id !== id);
+    await storage.setItem(`local:${JOBAPPLICATIONLIST}`, updatedApplications);
+  }
 });
 
 async function initStorage() {
