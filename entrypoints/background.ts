@@ -1,5 +1,30 @@
+import { storage } from "#imports";
+import { onMessage } from "@/utils/messaging";
+import { JOBAPPLICATIONLIST } from "@/utils/storageName";
+import { Job_Application } from "@/utils/types";
+
 export default defineBackground(() => {
-  console.log("Background script loaded!", { id: browser.runtime.id });
+  // Initialize extension when background script loads
+  console.log("Extension background script initialized");
+  initStorage();
+
+  // Listen for extension installation/startup events
+  browser.runtime.onStartup.addListener(() => {
+    console.log("Extension started up");
+    initStorage();
+  });
+
+  browser.runtime.onInstalled.addListener((details) => {
+    console.log("Extension installed/updated", details);
+
+    if (details.reason === "install") {
+      console.log("Extension installed for the first time");
+      initStorage();
+    } else if (details.reason === "update") {
+      console.log("Extension updated from version", details.previousVersion);
+      // Handle migration logic if needed
+    }
+  });
 
   // Listen for tab updates (navigation, page loads)
   browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -33,3 +58,26 @@ export default defineBackground(() => {
     }
   });
 });
+
+//msg listener
+onMessage("getApplications", async () => {
+  const jobApplications = (await storage.getItem(
+    `local:${JOBAPPLICATIONLIST}`
+  )) as Job_Application[] | undefined;
+
+  return jobApplications || [];
+});
+
+async function initStorage() {
+  // Initialize storage with default values
+  const jobApplications = (await storage.getItem(
+    `local:${JOBAPPLICATIONLIST}`
+  )) as Job_Application[] | undefined;
+
+  if (!jobApplications) {
+    await storage.setItem(`local:${JOBAPPLICATIONLIST}`, []);
+    console.log("Initialized job applications storage.");
+  } else {
+    console.log("Job applications storage already initialized.");
+  }
+}

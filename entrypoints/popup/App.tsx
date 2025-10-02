@@ -1,149 +1,70 @@
 import "./App.css";
 import { useEffect, useState } from "react";
+import { storage } from "#imports";
+import { JOBAPPLICATIONLIST } from "@/utils/storageName";
+import { Job_Application } from "@/utils/types";
 
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [userPreference, setUserPreference] = useState<
-    "light" | "dark" | "system"
-  >("system");
+  const [appliedJobsCount, setAppliedJobsCount] = useState(0);
 
+  // Initialize popup data when component mounts
   useEffect(() => {
-    // Check for saved theme preference
-    const saved = localStorage.getItem("theme-preference") as
-      | "light"
-      | "dark"
-      | "system"
-      | null;
-    const preference = saved || "system";
-    setUserPreference(preference);
+    const initializePopup = async () => {
+      console.log("Popup initialized - loading job applications count");
 
-    if (preference === "system") {
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
-      setIsDarkMode(prefersDark);
-    } else {
-      setIsDarkMode(preference === "dark");
-    }
+      try {
+        const jobApplications = (await storage.getItem(
+          `local:${JOBAPPLICATIONLIST}`
+        )) as Job_Application[] | undefined;
 
-    // Listen for system theme changes only if user preference is 'system'
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (userPreference === "system") {
-        setIsDarkMode(e.matches);
+        if (jobApplications) {
+          setAppliedJobsCount(jobApplications.length);
+          console.log(`Loaded ${jobApplications.length} job applications`);
+        } else {
+          setAppliedJobsCount(0);
+          console.log("No job applications found");
+        }
+      } catch (error) {
+        console.error("Error loading job applications:", error);
+        setAppliedJobsCount(0);
       }
     };
 
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [userPreference]);
+    initializePopup();
+  }, []);
 
-  const toggleTheme = () => {
-    const newTheme = isDarkMode ? "light" : "dark";
-    setUserPreference(newTheme);
-    setIsDarkMode(!isDarkMode);
-    localStorage.setItem("theme-preference", newTheme);
+  const handleViewAppliedJobs = async () => {
+    try {
+      // Open the job applications page in a new tab
+      const tabs = await browser.tabs.create({
+        url: browser.runtime.getURL("/jobApply.html"),
+      });
+      // Close the popup after navigation
+      window.close();
+    } catch (error) {
+      console.error("Error opening job applications page:", error);
+      // Fallback: try to open in current tab
+      window.location.href = "/jobApply.html";
+    }
   };
 
-  const url = browser.runtime.getURL("/jobApply.html");
-  const handleOpenJobApply = () => {
-    browser.tabs.create({ url });
+  const handleSettings = () => {
+    // For now, just show an alert - settings page can be implemented later
+    alert("Settings page coming soon!");
   };
 
   return (
-    <div
-      className={`w-80 min-h-[400px] ${
-        isDarkMode ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"
-      } border shadow-xl transition-colors duration-200 animate-fade-in rounded-lg overflow-hidden`}
-    >
-      <div className="p-6">
-        {/* Header with Theme Toggle */}
-        <div className="flex justify-between items-start mb-8">
-          <div className="flex-1">
-            <div
-              className={`w-14 h-14 mx-auto mb-4 ${
-                isDarkMode
-                  ? "bg-blue-500 shadow-blue-500/25"
-                  : "bg-gradient-to-br from-blue-500 to-blue-600"
-              } rounded-2xl flex items-center justify-center shadow-lg transition-all duration-200`}
-            >
-              <svg
-                className="w-7 h-7 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M8 6v10a2 2 0 002 2h4a2 2 0 002-2V6m0 0a2 2 0 012 2v6a2 2 0 01-2 2"
-                />
-              </svg>
-            </div>
-            <h1
-              className={`text-xl font-bold ${
-                isDarkMode ? "text-white" : "text-gray-900"
-              } mb-2 transition-colors duration-200 text-center`}
-            >
-              LinkedIn Job Tracker
-            </h1>
-            <p
-              className={`${
-                isDarkMode ? "text-gray-400" : "text-gray-600"
-              } text-sm transition-colors duration-200 text-center`}
-            >
-              Track and manage your job applications
-            </p>
-          </div>
+    <div className="w-80 min-h-96 bg-gradient-to-br from-slate-50 to-blue-50 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full -translate-y-16 translate-x-16 opacity-60"></div>
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-100 to-cyan-100 rounded-full translate-y-12 -translate-x-12 opacity-40"></div>
 
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            className={`w-8 h-8 ${
-              isDarkMode
-                ? "bg-gray-800 hover:bg-gray-700 text-yellow-400"
-                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-            } rounded-lg flex items-center justify-center transition-all duration-200 group hover:scale-110 active:scale-95 ml-2`}
-            title={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
-          >
-            {isDarkMode ? (
-              <svg
-                className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            ) : (
-              <svg
-                className="w-4 h-4 group-hover:-rotate-12 transition-transform duration-200"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-              </svg>
-            )}
-          </button>
-        </div>
-
-        {/* Main Content */}
-        <div className="space-y-5">
-          {/* Primary Action Button */}
-          <button
-            onClick={handleOpenJobApply}
-            className={`w-full ${
-              isDarkMode
-                ? "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20"
-                : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-600/25"
-            } text-white font-medium py-3.5 px-4 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 transform hover:scale-[1.02] active:scale-[0.98]`}
-          >
+      <div className="relative z-10 p-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
             <svg
-              className="w-5 h-5"
+              className="w-8 h-8 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -152,120 +73,152 @@ function App() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            <span>View Applications</span>
-          </button>
+          </div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
+            Job Logger
+          </h1>
+          <p className="text-sm text-gray-600 font-medium mb-4">
+            Your Career Companion
+          </p>
 
-          {/* Quick Stats */}
-          <div
-            className={`${
-              isDarkMode
-                ? "bg-gray-800 border-gray-700"
-                : "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200"
-            } border rounded-xl p-5 transition-all duration-200`}
-          >
-            <div className="text-center">
-              <div
-                className={`text-3xl font-bold ${
-                  isDarkMode ? "text-white" : "text-gray-900"
-                } mb-1 transition-colors duration-200`}
-              >
-                0
+          {/* Job Counter Display */}
+          <div className="inline-flex items-center gap-3 bg-white/70 backdrop-blur-sm border border-white/60 rounded-2xl px-4 py-3 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-md">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M9 12l2 2 4-4"
+                  />
+                </svg>
               </div>
-              <div
-                className={`${
-                  isDarkMode ? "text-gray-400" : "text-gray-600"
-                } text-sm font-medium transition-colors duration-200`}
-              >
-                Applications Tracked
+              <div className="text-left">
+                <div className="text-2xl font-bold text-gray-900 leading-none">
+                  {appliedJobsCount}
+                </div>
+                <div className="text-xs text-gray-600 font-medium">
+                  Jobs Applied
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              className={`p-4 ${
-                isDarkMode
-                  ? "bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-300 hover:text-white"
-                  : "bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-900"
-              } border rounded-xl text-sm font-medium transition-all duration-200 group hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]`}
-            >
-              <div className="flex flex-col items-center space-y-2">
-                <div
-                  className={`w-8 h-8 ${
-                    isDarkMode
-                      ? "bg-green-500/20 text-green-400"
-                      : "bg-green-100 text-green-600"
-                  } rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                </div>
-                <span>Add Job</span>
-              </div>
-            </button>
-            <button
-              className={`p-4 ${
-                isDarkMode
-                  ? "bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-300 hover:text-white"
-                  : "bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-900"
-              } border rounded-xl text-sm font-medium transition-all duration-200 group hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]`}
-            >
-              <div className="flex flex-col items-center space-y-2">
-                <div
-                  className={`w-8 h-8 ${
-                    isDarkMode
-                      ? "bg-purple-500/20 text-purple-400"
-                      : "bg-purple-100 text-purple-600"
-                  } rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                </div>
-                <span>Reports</span>
-              </div>
-            </button>
+            <div className="w-px h-8 bg-gray-200"></div>
+            <div className="text-center">
+              <div className="text-xs text-gray-500 font-medium">This Week</div>
+              <div className="text-lg font-bold text-blue-600">0</div>
+            </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div
-          className={`text-center pt-5 mt-6 border-t ${
-            isDarkMode ? "border-gray-700" : "border-gray-200"
-          } transition-colors duration-200`}
-        >
-          <p
-            className={`${
-              isDarkMode ? "text-gray-500" : "text-gray-500"
-            } text-xs transition-colors duration-200`}
+        {/* Main Actions */}
+        <div className="space-y-3">
+          {/* Primary Button - View Applied Jobs */}
+          <button
+            onClick={handleViewAppliedJobs}
+            className="group w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white font-semibold py-4 px-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:ring-offset-2 relative overflow-hidden"
           >
-            Stay organized with your job search
-          </p>
+            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center justify-center gap-3">
+              <svg
+                className="w-5 h-5 transition-transform group-hover:scale-110"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              <span>View Applied Jobs</span>
+              <svg
+                className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </div>
+          </button>
+
+          {/* Secondary Button - Settings */}
+          <button
+            onClick={handleSettings}
+            className="group w-full bg-white/80 backdrop-blur-sm hover:bg-white border border-gray-200/60 hover:border-gray-300/80 text-gray-700 hover:text-gray-900 font-medium py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-out transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-gray-400/20 focus:ring-offset-2"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <svg
+                className="w-5 h-5 transition-transform group-hover:rotate-90"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span>Settings</span>
+            </div>
+          </button>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 pt-6 border-t border-gray-200/50">
+          <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span className="font-medium">
+              Track your applications efficiently
+            </span>
+          </div>
+          <div className="flex items-center justify-center mt-3 gap-4">
+            <div className="flex items-center gap-1 text-xs text-gray-400">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span>Secure</span>
+            </div>
+            <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+            <div className="flex items-center gap-1 text-xs text-gray-400">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span>Fast</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

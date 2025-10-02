@@ -1,10 +1,11 @@
 import { defineExtensionMessaging } from "@webext-core/messaging";
-import { Application } from "./types";
+import { Job_Application } from "./types";
 
 interface ProtocolMap {
-  saveApplication(): Application;
-  getApplications(): Application[];
+  saveApplication(application: Job_Application): Job_Application;
+  getApplications(): Job_Application[];
   deleteApplication(id: string): void;
 }
 
-export const messaging = defineExtensionMessaging<ProtocolMap>();
+export const { onMessage, sendMessage } =
+  defineExtensionMessaging<ProtocolMap>();

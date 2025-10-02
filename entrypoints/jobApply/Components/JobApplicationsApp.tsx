@@ -1,314 +1,298 @@
 import React, { useState, useEffect } from "react";
-import { Application } from "../../../utils/types";
-import ApplicationList from "./ApplicationList";
-import ApplicationForm from "./ApplicationForm";
+import { Job_Application } from "../../../utils/types";
+import { sendMessage } from "../../../utils/messaging";
+import { ApplicationList } from "./ApplicationList";
+import { ApplicationForm } from "./ui/ApplicationForm";
+import Loading from "./ui/Loading";
+import Error from "./ui/Error";
 
-const JobApplicationsApp: React.FC = () => {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [isFormVisible, setIsFormVisible] = useState(false);
-  const [editingApplication, setEditingApplication] = useState<
-    Application | undefined
-  >();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+type ViewState = "list" | "add" | "edit";
 
-  // Load applications from localStorage on component mount
+export const JobApplicationsApp: React.FC = () => {
+  const [applications, setApplications] = useState<Job_Application[]>([]);
+  const [currentView, setCurrentView] = useState<ViewState>("list");
+  const [editingApplication, setEditingApplication] =
+    useState<Job_Application | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load applications on component mount
   useEffect(() => {
-    const savedApplications = localStorage.getItem("jobApplications");
-    if (savedApplications) {
-      try {
-        setApplications(JSON.parse(savedApplications));
-      } catch (error) {
-        console.error("Error loading applications:", error);
-      }
-    }
-
-    // Check for dark mode preference
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-    const savedTheme = localStorage.getItem("theme-preference");
-
-    if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove("dark");
-      document.body.classList.remove("dark");
-    }
-
-    // Listen for theme changes
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem("theme-preference")) {
-        setIsDarkMode(e.matches);
-        if (e.matches) {
-          document.documentElement.classList.add("dark");
-          document.body.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-          document.body.classList.remove("dark");
-        }
-      }
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
+    loadApplications();
   }, []);
 
-  // Save applications to localStorage whenever applications change
-  useEffect(() => {
-    localStorage.setItem("jobApplications", JSON.stringify(applications));
-  }, [applications]);
+  const loadApplications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log("Loading applications...");
+      const apps = await sendMessage("getApplications");
 
-  const toggleTheme = () => {
-    const newTheme = isDarkMode ? "light" : "dark";
-    setIsDarkMode(!isDarkMode);
-    localStorage.setItem("theme-preference", newTheme);
+      console.log("Loaded applications:", apps);
 
-    if (!isDarkMode) {
-      document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      document.body.classList.remove("dark");
+      // // For development/testing - add a sample application if no data exists
+      // if (!apps ) {
+      //   const testApplication: Job_Application = {
+      //     id: "test-app-" + Date.now(),
+      //     url: "https://jobs.google.com/jobs/software-engineer-frontend",
+      //     company: "Google",
+      //     position: "Senior Frontend Engineer",
+      //     dateApplied: "2025-10-01",
+      //     status: "applied",
+      //     resumeVersion: "Tech-focused v2.1",
+      //     notes:
+      //       "Applied through referral from John Doe. Really excited about this opportunity to work on Google Search frontend. The role involves React, TypeScript, and modern web technologies.",
+      //   };
+      //   setApplications([testApplication]);
+      // } else {
+      //   setApplications(apps);
+      // }
+    } catch (err) {
+      console.error("Failed to load applications:", err);
+      setError("Failed to load applications. Please try again.");
+      // Even on error, show test data for development
+      // const testApplication: Job_Application = {
+      //   id: "test-app-" + Date.now(),
+      //   url: "https://jobs.google.com/jobs/software-engineer-frontend",
+      //   company: "Google",
+      //   position: "Senior Frontend Engineer",
+      //   dateApplied: "2025-10-01",
+      //   status: "applied",
+      //   resumeVersion: "Tech-focused v2.1",
+      //   notes:
+      //     "Applied through referral from John Doe. Really excited about this opportunity to work on Google Search frontend. The role involves React, TypeScript, and modern web technologies.",
+      // };
+      // setApplications([testApplication]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const generateId = () => {
-    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+  const handleAddApplication = async (
+    applicationData: Omit<Job_Application, "id">
+  ) => {
+    try {
+      const newApplication: Job_Application = {
+        ...applicationData,
+        id: Date.now().toString(), // Simple ID generation for now
+      };
+
+      // Send to background script to save
+      await sendMessage("saveApplication", newApplication);
+
+      // Update local state
+      setApplications((prev) => [newApplication, ...prev]);
+      setCurrentView("list");
+    } catch (err) {
+      console.error("Failed to save application:", err);
+      setError("Failed to save application. Please try again.");
+    }
   };
 
-  const handleAddApplication = () => {
-    setEditingApplication(undefined);
-    setIsFormVisible(true);
-  };
+  const handleEditApplication = async (
+    applicationData: Omit<Job_Application, "id">
+  ) => {
+    if (!editingApplication) return;
 
-  const handleEditApplication = (application: Application) => {
-    setEditingApplication(application);
-    setIsFormVisible(true);
-  };
+    try {
+      const updatedApplication: Job_Application = {
+        ...applicationData,
+        id: editingApplication.id,
+      };
 
-  const handleSaveApplication = (applicationData: Omit<Application, "id">) => {
-    if (editingApplication) {
-      // Update existing application
+      // Update in storage
+      await sendMessage("saveApplication", updatedApplication);
+
+      // Update local state
       setApplications((prev) =>
         prev.map((app) =>
-          app.id === editingApplication.id
-            ? { ...applicationData, id: editingApplication.id }
-            : app
+          app.id === editingApplication.id ? updatedApplication : app
         )
       );
-    } else {
-      // Add new application
-      const newApplication: Application = {
-        ...applicationData,
-        id: generateId(),
-      };
-      setApplications((prev) => [newApplication, ...prev]);
+
+      setCurrentView("list");
+      setEditingApplication(null);
+    } catch (err) {
+      console.error("Failed to update application:", err);
+      setError("Failed to update application. Please try again.");
     }
-    setIsFormVisible(false);
-    setEditingApplication(undefined);
   };
 
-  const handleDeleteApplication = (id: string) => {
-    if (confirm("Are you sure you want to delete this application?")) {
+  const handleDeleteApplication = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this application?")) return;
+
+    try {
+      await sendMessage("deleteApplication", id);
       setApplications((prev) => prev.filter((app) => app.id !== id));
+    } catch (err) {
+      console.error("Failed to delete application:", err);
+      setError("Failed to delete application. Please try again.");
     }
+  };
+
+  const handleEditClick = (application: Job_Application) => {
+    setEditingApplication(application);
+    setCurrentView("edit");
   };
 
   const handleCancelForm = () => {
-    setIsFormVisible(false);
-    setEditingApplication(undefined);
+    setCurrentView("list");
+    setEditingApplication(null);
   };
 
-  // Filter applications based on search term and status
-  const filteredApplications = applications.filter((app) => {
-    const matchesSearch =
-      searchTerm === "" ||
-      app.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.position.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus = statusFilter === "all" || app.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  const getStatusCounts = () => {
-    const counts = applications.reduce((acc, app) => {
+  const getHeaderInfo = () => {
+    const totalCount = applications.length;
+    const statusCounts = applications.reduce((acc, app) => {
       acc[app.status] = (acc[app.status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    return {
-      total: applications.length,
-      applied: counts.applied || 0,
-      interview: counts.interview || 0,
-      offer: counts.offer || 0,
-      rejected: counts.rejected || 0,
-    };
+    return { totalCount, statusCounts };
   };
 
-  const statusCounts = getStatusCounts();
+  const { totalCount, statusCounts } = getHeaderInfo();
+
+  if (loading) {
+    <Loading />;
+  }
 
   return (
-    <div
-      className={`min-h-screen transition-colors duration-200 ${
-        isDarkMode ? "bg-gray-900" : "bg-gray-50"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="container-main">
+      {/* Background decoration - matching popup style */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full -translate-y-16 translate-x-16 opacity-60"></div>
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-100 to-cyan-100 rounded-full translate-y-12 -translate-x-12 opacity-40"></div>
+
+      <div className="container-content">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                Job Applications Tracker
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Manage and track your job applications
-              </p>
+        <div className="page-header">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="icon-container icon-lg gradient-bg-primary">
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={toggleTheme}
-                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
-                title={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
-              >
-                {isDarkMode ? (
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                  </svg>
-                )}
-              </button>
-              <button
-                onClick={handleAddApplication}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                Add Application
-              </button>
+            <div>
+              <h1 className="page-title">Job Applications</h1>
+              <p className="page-subtitle">
+                Track and manage your job applications
+              </p>
             </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {statusCounts.total}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="glass-card p-4 text-center">
+              <div className="text-2xl font-bold text-gray-900">
+                {totalCount}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Total
-              </div>
+              <div className="text-sm text-gray-600">Total Applications</div>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="glass-card p-4 text-center">
               <div className="text-2xl font-bold text-blue-600">
-                {statusCounts.applied}
+                {statusCounts.applied || 0}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Applied
-              </div>
+              <div className="text-sm text-gray-600">Applied</div>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="glass-card p-4 text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                {statusCounts.interview}
+                {statusCounts.interview || 0}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Interview
-              </div>
+              <div className="text-sm text-gray-600">Interviews</div>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="glass-card p-4 text-center">
               <div className="text-2xl font-bold text-green-600">
-                {statusCounts.offer}
+                {statusCounts.offer || 0}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Offers
-              </div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="text-2xl font-bold text-red-600">
-                {statusCounts.rejected}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Rejected
-              </div>
+              <div className="text-sm text-gray-600">Offers</div>
             </div>
           </div>
 
-          {/* Search and Filter */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Search by company or position..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-100"
-              />
+          {/* Action Bar */}
+          {currentView === "list" && (
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <button
+                onClick={() => setCurrentView("add")}
+                className="btn-primary"
+              >
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  Add New Application
+                </div>
+              </button>
+
+              <button onClick={loadApplications} className="btn-secondary">
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  Refresh
+                </div>
+              </button>
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-100"
-            >
-              <option value="all">All Status</option>
-              <option value="applied">Applied</option>
-              <option value="interview">Interview</option>
-              <option value="offer">Offer</option>
-              <option value="rejected">Rejected</option>
-              <option value="withdrawn">Withdrawn</option>
-            </select>
-          </div>
+          )}
         </div>
 
-        {/* Applications List */}
-        <ApplicationList
-          applications={filteredApplications}
-          onEdit={handleEditApplication}
-          onDelete={handleDeleteApplication}
-        />
+        {/* Error Message */}
+        {error && <Error error={error} setError={setError} />}
 
-        {/* Application Form Modal */}
-        <ApplicationForm
-          application={editingApplication}
-          onSave={handleSaveApplication}
-          onCancel={handleCancelForm}
-          isVisible={isFormVisible}
-        />
+        {/* Main Content */}
+        {currentView === "list" && (
+          <ApplicationList
+            applications={applications}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteApplication}
+          />
+        )}
+
+        {currentView === "add" && (
+          <ApplicationForm
+            onSubmit={handleAddApplication}
+            onCancel={handleCancelForm}
+            isEdit={false}
+          />
+        )}
+
+        {currentView === "edit" && editingApplication && (
+          <ApplicationForm
+            application={editingApplication}
+            onSubmit={handleEditApplication}
+            onCancel={handleCancelForm}
+            isEdit={true}
+          />
+        )}
       </div>
     </div>
   );
 };
-
-export default JobApplicationsApp;
