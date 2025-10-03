@@ -26,7 +26,7 @@ export const JobApplicationsApp: React.FC = () => {
       setLoading(true);
       setError(null);
       console.log("Loading applications...");
-      const apps = await sendMessage(GETAPPLICATION);
+      const apps = await sendMessage("getApplications");
 
       console.log("Loaded applications:", apps);
       setApplications(apps);
@@ -79,7 +79,7 @@ export const JobApplicationsApp: React.FC = () => {
       };
 
       // Send to background script to save
-      await sendMessage(SAVEAPPLICATION, newApplication);
+      await sendMessage("saveApplication", newApplication);
 
       // Update local state
       setApplications((prev) => [newApplication, ...prev]);
@@ -102,7 +102,7 @@ export const JobApplicationsApp: React.FC = () => {
       };
 
       // Update in storage
-      await sendMessage(UPDATEAPPLICATION, updatedApplication);
+      await sendMessage("updateApplication", updatedApplication);
 
       // Update local state
       setApplications((prev) =>
@@ -123,7 +123,7 @@ export const JobApplicationsApp: React.FC = () => {
     if (!confirm("Are you sure you want to delete this application?")) return;
 
     try {
-      await sendMessage(DELETEAPPLICATION, id);
+      await sendMessage("deleteApplication", id);
       setApplications((prev) => prev.filter((app) => app.id !== id));
     } catch (err) {
       console.error("Failed to delete application:", err);

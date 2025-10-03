@@ -2,6 +2,7 @@ import { storage } from "#imports";
 import { onMessage } from "@/utils/messaging";
 import { JOBAPPLICATIONLIST } from "@/utils/storageName";
 import { Job_Application } from "@/utils/types";
+import extractJobIdFromUrl from "@/utils/utils";
 
 export default defineBackground(() => {
   // Initialize extension when background script loads
@@ -32,6 +33,7 @@ export default defineBackground(() => {
     if (changeInfo.status === "complete" && tab.url) {
       // Check if the URL is a LinkedIn page
       if (tab.url.includes("linkedin.com")) {
+        detectJobPostFromCollectionsPage(tab);
         console.log("LinkedIn visit detected!", {
           url: tab.url,
           tabId: tabId,
@@ -45,6 +47,7 @@ export default defineBackground(() => {
   browser.tabs.onActivated.addListener(async (activeInfo) => {
     try {
       const tab = await browser.tabs.get(activeInfo.tabId);
+      detectJobPostFromCollectionsPage(tab);
       if (tab.url && tab.url.includes("linkedin.com")) {
         console.log("LinkedIn tab activated!", {
           url: tab.url,
@@ -60,7 +63,7 @@ export default defineBackground(() => {
 });
 
 //msg listener
-onMessage(GETAPPLICATION, async () => {
+onMessage("getApplications", async () => {
   const jobApplications = (await storage.getItem(
     `local:${JOBAPPLICATIONLIST}`
   )) as Job_Application[] | undefined;
@@ -119,5 +122,21 @@ async function initStorage() {
     console.log("Initialized job applications storage.");
   } else {
     console.log("Job applications storage already initialized.");
+  }
+}
+
+function detectJobPostFromCollectionsPage(tab: Browser.tabs.Tab) {
+  console.log("Checking for job post on collections page...", tab);
+
+  if (!tab.url) return;
+
+  // Extract job ID from LinkedIn URLs using regex
+  const jobId = extractJobIdFromUrl(tab.url);
+
+  if (jobId) {
+    console.log("Job ID detected:", jobId);
+    console.log("Full URL:", tab.url);
+    // Send message to content script to fetch job details
+    sendMessage("CSgetDataFromJobCollection", undefined, tab.id);
   }
 }
