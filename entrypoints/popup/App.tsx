@@ -25,13 +25,13 @@ function App() {
 
       if (jobApplications) {
         setAppliedJobsCount(jobApplications.length);
-        
+
         // Calculate applications from this week
         const thisWeekApplications = jobApplications.filter((job) =>
           isDateInCurrentWeek(job.dateApplied)
         );
         setThisWeekCount(thisWeekApplications.length);
-        
+
         console.log(`Loaded ${jobApplications.length} job applications`);
         console.log(
           `${thisWeekApplications.length} applications applied this week`
@@ -58,9 +58,10 @@ function App() {
     setIsSubmitting(true);
     try {
       // Get existing applications
-      const existingApplications = (await storage.getItem(
-        `local:${JOBAPPLICATIONLIST}`
-      )) as Job_Application[] | undefined || [];
+      const existingApplications =
+        ((await storage.getItem(`local:${JOBAPPLICATIONLIST}`)) as
+          | Job_Application[]
+          | undefined) || [];
 
       // Create new application
       const newApplication: Job_Application = {
@@ -196,7 +197,11 @@ function App() {
             >
               <div className="flex items-center justify-center gap-2">
                 {/* Custom plus icon */}
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     fillRule="evenodd"
                     d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
@@ -210,7 +215,9 @@ function App() {
         ) : (
           <div className="mb-6 bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-stone-800">Quick Add Application</h3>
+              <h3 className="text-sm font-semibold text-stone-800">
+                Quick Add Application
+              </h3>
               <button
                 onClick={() => {
                   setShowQuickAdd(false);
@@ -218,7 +225,11 @@ function App() {
                 }}
                 className="text-stone-400 hover:text-stone-600 transition-colors"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     fillRule="evenodd"
                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -227,38 +238,50 @@ function App() {
                 </svg>
               </button>
             </div>
-            
+
             <div className="space-y-3">
               <div>
                 <input
                   type="text"
                   placeholder="Company Name *"
                   value={quickAddForm.company}
-                  onChange={(e) => setQuickAddForm({ ...quickAddForm, company: e.target.value })}
+                  onChange={(e) =>
+                    setQuickAddForm({
+                      ...quickAddForm,
+                      company: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400"
                 />
               </div>
-              
+
               <div>
                 <input
                   type="text"
                   placeholder="Position Title *"
                   value={quickAddForm.position}
-                  onChange={(e) => setQuickAddForm({ ...quickAddForm, position: e.target.value })}
+                  onChange={(e) =>
+                    setQuickAddForm({
+                      ...quickAddForm,
+                      position: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400"
                 />
               </div>
-              
+
               <div>
                 <input
                   type="url"
                   placeholder="Job URL (optional)"
                   value={quickAddForm.url}
-                  onChange={(e) => setQuickAddForm({ ...quickAddForm, url: e.target.value })}
+                  onChange={(e) =>
+                    setQuickAddForm({ ...quickAddForm, url: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400"
                 />
               </div>
-              
+
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={handleQuickAdd}
