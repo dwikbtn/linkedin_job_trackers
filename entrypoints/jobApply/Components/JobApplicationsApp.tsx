@@ -144,7 +144,8 @@ export const JobApplicationsApp: React.FC = () => {
   const getHeaderInfo = () => {
     const totalCount = applications.length;
     const statusCounts = applications.reduce((acc, app) => {
-      acc[app.status] = (acc[app.status] || 0) + 1;
+      const status = app.status.toLowerCase();
+      acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
@@ -153,68 +154,73 @@ export const JobApplicationsApp: React.FC = () => {
 
   const { totalCount, statusCounts } = getHeaderInfo();
 
+  console.log(statusCounts);
+
   if (loading) {
     <Loading />;
   }
 
   return (
-    <div className="container-main">
-      {/* Background decoration - matching popup style */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full -translate-y-16 translate-x-16 opacity-60"></div>
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-100 to-cyan-100 rounded-full translate-y-12 -translate-x-12 opacity-40"></div>
+    <div className="min-h-screen bg-stone-50 relative">
+      {/* Subtle geometric background decoration matching popup */}
+      <div className="absolute top-8 right-8 w-24 h-24 bg-stone-100 transform rotate-12 rounded-lg opacity-40"></div>
+      <div className="absolute bottom-12 left-12 w-16 h-16 bg-amber-50 rounded-full opacity-60"></div>
+      <div className="absolute top-1/3 right-16 w-4 h-4 bg-amber-200 rounded-full"></div>
+      <div className="absolute bottom-1/4 left-20 w-6 h-6 bg-stone-200 transform rotate-45"></div>
 
-      <div className="container-content">
+      <div className="relative z-10 container mx-auto px-6 py-8 max-w-6xl">
         {/* Header */}
-        <div className="page-header">
+        <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="icon-container icon-lg gradient-bg-primary">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-3xl shadow-sm border border-amber-200">
+              {/* Custom briefcase icon matching popup */}
               <svg
-                className="w-8 h-8 text-white"
-                fill="none"
-                stroke="currentColor"
+                className="w-8 h-8 text-amber-800"
+                fill="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
+                <path d="M10 2h4a2 2 0 0 1 2 2v2h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4V4a2 2 0 0 1 2-2zM8 6h8V4h-4v2zm-2 4v2h12v-2H6z" />
               </svg>
             </div>
-            <div>
-              <h1 className="page-title">Job Applications</h1>
-              <p className="page-subtitle">
-                Track and manage your job applications
+            <div className="text-left">
+              <h1 className="text-3xl font-bold text-stone-800 mb-1">
+                Application Manager
+              </h1>
+              <p className="text-stone-600 font-medium">
+                Professional career tracking dashboard
               </p>
             </div>
           </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="glass-card p-4 text-center">
-              <div className="text-2xl font-bold text-gray-900">
+            <div className="bg-white border border-stone-200 rounded-2xl p-4 text-center shadow-sm">
+              <div className="text-2xl font-bold text-stone-800">
                 {totalCount}
               </div>
-              <div className="text-sm text-gray-600">Total Applications</div>
+              <div className="text-sm text-stone-600 font-medium">
+                Total Applications
+              </div>
             </div>
-            <div className="glass-card p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="bg-white border border-stone-200 rounded-2xl p-4 text-center shadow-sm">
+              <div className="text-2xl font-bold text-amber-700">
                 {statusCounts.applied || 0}
               </div>
-              <div className="text-sm text-gray-600">Applied</div>
+              <div className="text-sm text-stone-600 font-medium">Applied</div>
             </div>
-            <div className="glass-card p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-600">
+            <div className="bg-white border border-stone-200 rounded-2xl p-4 text-center shadow-sm">
+              <div className="text-2xl font-bold text-orange-600">
                 {statusCounts.interview || 0}
               </div>
-              <div className="text-sm text-gray-600">Interviews</div>
+              <div className="text-sm text-stone-600 font-medium">
+                Interviews
+              </div>
             </div>
-            <div className="glass-card p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">
+            <div className="bg-white border border-stone-200 rounded-2xl p-4 text-center shadow-sm">
+              <div className="text-2xl font-bold text-emerald-600">
                 {statusCounts.offer || 0}
               </div>
-              <div className="text-sm text-gray-600">Offers</div>
+              <div className="text-sm text-stone-600 font-medium">Offers</div>
             </div>
           </div>
 
@@ -223,39 +229,40 @@ export const JobApplicationsApp: React.FC = () => {
             <div className="flex items-center justify-center gap-4 mb-8">
               <button
                 onClick={() => setCurrentView("add")}
-                className="btn-primary"
+                className="bg-amber-700 hover:bg-amber-800 text-white font-semibold py-3 px-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-200 ease-out focus:outline-none focus:ring-3 focus:ring-amber-300"
               >
                 <div className="flex items-center gap-2">
+                  {/* Custom plus icon */}
                   <svg
                     className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
                   >
                     <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
                     />
                   </svg>
                   Add New Application
                 </div>
               </button>
 
-              <button onClick={loadApplications} className="btn-secondary">
+              <button
+                onClick={loadApplications}
+                className="bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-300 text-stone-700 hover:text-stone-800 font-medium py-3 px-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ease-out focus:outline-none focus:ring-3 focus:ring-stone-200"
+              >
                 <div className="flex items-center gap-2">
+                  {/* Custom refresh icon */}
                   <svg
                     className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
                   >
                     <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      fillRule="evenodd"
+                      d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                      clipRule="evenodd"
                     />
                   </svg>
                   Refresh

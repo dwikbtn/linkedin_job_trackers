@@ -26,3 +26,27 @@ export default function extractJobIdFromUrl(url: string): string | null {
 
   return null;
 }
+
+/**
+ * Check if a given date string is within the current week (Monday to Sunday)
+ * @param dateString - Date string in ISO format or parseable format
+ * @returns boolean - true if the date is within the current week
+ */
+export function isDateInCurrentWeek(dateString: string): boolean {
+  const date = new Date(dateString);
+  const now = new Date();
+
+  // Get the start of the current week (Monday)
+  const currentDay = now.getDay();
+  const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1; // Sunday is 0, Monday is 1
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - daysFromMonday);
+  weekStart.setHours(0, 0, 0, 0);
+
+  // Get the end of the current week (Sunday)
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return date >= weekStart && date <= weekEnd;
+}

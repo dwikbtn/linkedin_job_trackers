@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import { storage } from "#imports";
 import { JOBAPPLICATIONLIST } from "@/utils/storageName";
 import { Job_Application } from "@/utils/types";
+import { isDateInCurrentWeek } from "@/utils/utils";
 
 function App() {
   const [appliedJobsCount, setAppliedJobsCount] = useState(0);
+  const [thisWeekCount, setThisWeekCount] = useState(0);
 
   // Initialize popup data when component mounts
   useEffect(() => {
@@ -19,14 +21,26 @@ function App() {
 
         if (jobApplications) {
           setAppliedJobsCount(jobApplications.length);
+
+          // Calculate applications from this week
+          const thisWeekApplications = jobApplications.filter((job) =>
+            isDateInCurrentWeek(job.dateApplied)
+          );
+          setThisWeekCount(thisWeekApplications.length);
+
           console.log(`Loaded ${jobApplications.length} job applications`);
+          console.log(
+            `${thisWeekApplications.length} applications applied this week`
+          );
         } else {
           setAppliedJobsCount(0);
+          setThisWeekCount(0);
           console.log("No job applications found");
         }
       } catch (error) {
         console.error("Error loading job applications:", error);
         setAppliedJobsCount(0);
+        setThisWeekCount(0);
       }
     };
 
@@ -54,67 +68,63 @@ function App() {
   };
 
   return (
-    <div className="w-80 min-h-96 bg-gradient-to-br from-slate-50 to-blue-50 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full -translate-y-16 translate-x-16 opacity-60"></div>
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-100 to-cyan-100 rounded-full translate-y-12 -translate-x-12 opacity-40"></div>
+    <div className="w-80 min-h-96 bg-stone-50 relative">
+      {/* Subtle geometric background decoration */}
+      <div className="absolute top-4 right-4 w-20 h-20 bg-stone-100 transform rotate-12 rounded-lg opacity-50"></div>
+      <div className="absolute bottom-6 left-6 w-12 h-12 bg-amber-50 rounded-full"></div>
+      <div className="absolute top-1/2 right-8 w-3 h-3 bg-amber-200 rounded-full"></div>
 
       <div className="relative z-10 p-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-3xl mb-4 shadow-sm border border-amber-200">
+            {/* Custom briefcase icon */}
             <svg
-              className="w-8 h-8 text-white"
-              fill="none"
-              stroke="currentColor"
+              className="w-8 h-8 text-amber-800"
+              fill="currentColor"
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
+              <path d="M10 2h4a2 2 0 0 1 2 2v2h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4V4a2 2 0 0 1 2-2zM8 6h8V4h-4v2zm-2 4v2h12v-2H6z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
-            Job Logger
+          <h1 className="text-2xl font-bold text-stone-800 mb-1">
+            Career Tracker
           </h1>
-          <p className="text-sm text-gray-600 font-medium mb-4">
-            Your Career Companion
+          <p className="text-sm text-stone-600 font-medium mb-6">
+            Manage your job applications effortlessly.
           </p>
 
           {/* Job Counter Display */}
-          <div className="inline-flex items-center gap-3 bg-white/70 backdrop-blur-sm border border-white/60 rounded-2xl px-4 py-3 shadow-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center shadow-md">
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M9 12l2 2 4-4"
-                  />
-                </svg>
-              </div>
-              <div className="text-left">
-                <div className="text-2xl font-bold text-gray-900 leading-none">
-                  {appliedJobsCount}
+          <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-amber-100 rounded-2xl flex items-center justify-center border border-amber-200">
+                  {/* Custom checkmark icon */}
+                  <svg
+                    className="w-5 h-5 text-amber-700"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                  </svg>
                 </div>
-                <div className="text-xs text-gray-600 font-medium">
-                  Jobs Applied
+                <div className="text-left">
+                  <div className="text-2xl font-bold text-stone-800">
+                    {appliedJobsCount}
+                  </div>
+                  <div className="text-xs text-stone-600 font-medium">
+                    Applications Tracked
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="w-px h-8 bg-gray-200"></div>
-            <div className="text-center">
-              <div className="text-xs text-gray-500 font-medium">This Week</div>
-              <div className="text-lg font-bold text-blue-600">0</div>
+              <div className="text-center bg-stone-50 px-3 py-2 rounded-xl">
+                <div className="text-xs text-stone-500 font-medium">
+                  This Week
+                </div>
+                <div className="text-lg font-bold text-stone-700">
+                  {thisWeekCount}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -124,35 +134,24 @@ function App() {
           {/* Primary Button - View Applied Jobs */}
           <button
             onClick={handleViewAppliedJobs}
-            className="group w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white font-semibold py-4 px-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 ease-out transform hover:scale-[1.02] hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:ring-offset-2 relative overflow-hidden"
+            className="group w-full bg-amber-700 hover:bg-amber-800 text-white font-semibold py-4 px-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-200 ease-out focus:outline-none focus:ring-3 focus:ring-amber-300 relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center justify-center gap-3">
-              <svg
-                className="w-5 h-5 transition-transform group-hover:scale-110"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
+            <div className="flex items-center justify-center gap-3">
+              {/* Custom folder icon */}
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM4 8v8h12V8H4z" />
               </svg>
-              <span>View Applied Jobs</span>
+              <span>View Applications</span>
+              {/* Custom arrow icon */}
               <svg
                 className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                fill="currentColor"
+                viewBox="0 0 20 20"
               >
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
+                  fillRule="evenodd"
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                  clipRule="evenodd"
                 />
               </svg>
             </div>
@@ -161,26 +160,19 @@ function App() {
           {/* Secondary Button - Settings */}
           <button
             onClick={handleSettings}
-            className="group w-full bg-white/80 backdrop-blur-sm hover:bg-white border border-gray-200/60 hover:border-gray-300/80 text-gray-700 hover:text-gray-900 font-medium py-3.5 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ease-out transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-gray-400/20 focus:ring-offset-2"
+            className="group w-full bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-300 text-stone-700 hover:text-stone-800 font-medium py-3.5 px-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ease-out focus:outline-none focus:ring-3 focus:ring-stone-200"
           >
             <div className="flex items-center justify-center gap-3">
+              {/* Custom settings/gear icon */}
               <svg
-                className="w-5 h-5 transition-transform group-hover:rotate-90"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                className="w-5 h-5 transition-transform group-hover:rotate-45"
+                fill="currentColor"
+                viewBox="0 0 20 20"
               >
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  fillRule="evenodd"
+                  d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                  clipRule="evenodd"
                 />
               </svg>
               <span>Settings</span>
@@ -189,26 +181,28 @@ function App() {
         </div>
 
         {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-200/50">
-          <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+        <div className="mt-8 pt-6 border-t border-stone-200">
+          <div className="flex items-center justify-center gap-2 text-xs text-stone-600">
+            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
             <span className="font-medium">
-              Track your applications efficiently
+              No chaos. Just clean career tracking.
             </span>
           </div>
           <div className="flex items-center justify-center mt-3 gap-4">
-            <div className="flex items-center gap-1 text-xs text-gray-400">
+            <div className="flex items-center gap-1 text-xs text-stone-500">
+              {/* Custom shield icon */}
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                   clipRule="evenodd"
                 />
               </svg>
               <span>Secure</span>
             </div>
-            <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-            <div className="flex items-center gap-1 text-xs text-gray-400">
+            <div className="w-1 h-1 bg-stone-300 rounded-full"></div>
+            <div className="flex items-center gap-1 text-xs text-stone-500">
+              {/* Custom lightning bolt icon */}
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
@@ -216,7 +210,7 @@ function App() {
                   clipRule="evenodd"
                 />
               </svg>
-              <span>Fast</span>
+              <span>Efficient</span>
             </div>
           </div>
         </div>

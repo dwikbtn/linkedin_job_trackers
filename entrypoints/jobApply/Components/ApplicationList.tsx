@@ -92,48 +92,30 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
     if (sortBy !== option) {
       return (
         <svg
-          className="w-4 h-4 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+          className="w-4 h-4 text-stone-400"
+          fill="currentColor"
+          viewBox="0 0 20 20"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-          />
+          <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" />
         </svg>
       );
     }
 
     return sortOrder === "asc" ? (
       <svg
-        className="w-4 h-4 text-blue-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
+        className="w-4 h-4 text-amber-700"
+        fill="currentColor"
+        viewBox="0 0 20 20"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
-        />
+        <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" />
       </svg>
     ) : (
       <svg
-        className="w-4 h-4 text-blue-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
+        className="w-4 h-4 text-amber-700"
+        fill="currentColor"
+        viewBox="0 0 20 20"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"
-        />
+        <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM13 15a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L13 9.414V15z" />
       </svg>
     );
   };
@@ -141,25 +123,20 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
   if (applications.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="icon-container icon-lg gradient-bg-primary mx-auto mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-3xl shadow-sm border border-amber-200 mx-auto mb-4">
+          {/* Custom briefcase icon */}
           <svg
-            className="w-8 h-8 text-white"
-            fill="none"
-            stroke="currentColor"
+            className="w-8 h-8 text-amber-800"
+            fill="currentColor"
             viewBox="0 0 24 24"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
+            <path d="M10 2h4a2 2 0 0 1 2 2v2h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4V4a2 2 0 0 1 2-2zM8 6h8V4h-4v2zm-2 4v2h12v-2H6z" />
           </svg>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        <h3 className="text-xl font-semibold text-stone-800 mb-2">
           No Applications Yet
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-stone-600 mb-6">
           Start tracking your job applications to see them here.
         </p>
       </div>
@@ -169,22 +146,21 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
   return (
     <div className="space-y-6">
       {/* Controls Bar */}
-      <div className="glass-card p-4">
+      <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-sm">
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
           {/* Search */}
           <div className="flex-1 max-w-md">
             <div className="relative">
+              {/* Custom search icon */}
               <svg
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-stone-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
               >
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  fillRule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clipRule="evenodd"
                 />
               </svg>
               <input
@@ -192,7 +168,7 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
                 placeholder="Search companies, positions, or notes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="form-input pl-10"
+                className="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-xl bg-stone-50 focus:outline-none focus:ring-3 focus:ring-amber-200 focus:border-amber-300 transition-colors"
               />
             </div>
           </div>
@@ -203,7 +179,7 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="form-select w-auto min-w-[120px]"
+              className="px-3 py-2 border border-stone-200 rounded-xl bg-white focus:outline-none focus:ring-3 focus:ring-amber-200 focus:border-amber-300 text-stone-700 min-w-[120px]"
             >
               <option value="all">All Statuses</option>
               {statusOptions.map((status) => (
@@ -214,51 +190,41 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
             </select>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center bg-stone-100 rounded-xl p-1">
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-2 rounded-md transition-colors ${
+                className={`p-2 rounded-lg transition-colors ${
                   viewMode === "grid"
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
+                    ? "bg-white text-amber-700 shadow-sm"
+                    : "text-stone-600 hover:text-stone-800"
                 }`}
                 title="Grid view"
               >
+                {/* Custom grid icon */}
                 <svg
                   className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                  />
+                  <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-2 rounded-md transition-colors ${
+                className={`p-2 rounded-lg transition-colors ${
                   viewMode === "list"
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
+                    ? "bg-white text-amber-700 shadow-sm"
+                    : "text-stone-600 hover:text-stone-800"
                 }`}
                 title="List view"
               >
+                {/* Custom list icon */}
                 <svg
                   className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                  />
+                  <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 8a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                 </svg>
               </button>
             </div>
@@ -266,8 +232,8 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
         </div>
 
         {/* Sort Options */}
-        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
-          <span className="text-sm text-gray-600 font-medium">Sort by:</span>
+        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-stone-200">
+          <span className="text-sm text-stone-600 font-medium">Sort by:</span>
           <div className="flex items-center gap-2">
             {[
               { key: "dateApplied" as SortOption, label: "Date Applied" },
@@ -280,8 +246,8 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
                 onClick={() => handleSort(key)}
                 className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                   sortBy === key
-                    ? "bg-blue-100 text-blue-700 font-medium"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "bg-amber-100 text-amber-800 font-medium border border-amber-200"
+                    : "text-stone-600 hover:text-stone-800 hover:bg-stone-100"
                 }`}
               >
                 {label}
@@ -294,7 +260,7 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
 
       {/* Results Summary */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-stone-600">
           Showing {filteredAndSortedApplications.length} of{" "}
           {applications.length} applications
         </p>
@@ -303,25 +269,24 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
       {/* Applications Grid/List */}
       {filteredAndSortedApplications.length === 0 ? (
         <div className="text-center py-12">
-          <div className="icon-container icon-lg bg-gray-100 mx-auto mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-stone-100 rounded-3xl shadow-sm border border-stone-200 mx-auto mb-4">
+            {/* Custom search icon */}
             <svg
-              className="w-8 h-8 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+              className="w-8 h-8 text-stone-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
             >
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                fillRule="evenodd"
+                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                clipRule="evenodd"
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-stone-800 mb-2">
             No matching applications
           </h3>
-          <p className="text-gray-600">
+          <p className="text-stone-600">
             Try adjusting your search or filter criteria.
           </p>
         </div>

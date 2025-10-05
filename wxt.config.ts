@@ -8,7 +8,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   }),
   manifest: {
-    name: "Job Logger",
+    name: "Career Tracker",
     description: "Log and track your job applications seamlessly.",
     version: "1.0.0",
     permissions: ["storage", "activeTab"],

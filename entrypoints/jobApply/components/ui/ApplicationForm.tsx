@@ -85,31 +85,34 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
   ];
 
   return (
-    <div className="glass-card p-6 max-w-2xl mx-auto">
+    <div className="bg-white border border-stone-200 rounded-2xl p-6 max-w-2xl mx-auto shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold gradient-text">
+          <h2 className="text-2xl font-bold text-stone-800">
             {isEdit ? "Edit Application" : "Add New Application"}
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className="text-stone-600 mt-1">
             {isEdit
               ? "Update your job application details"
               : "Track a new job application"}
           </p>
         </div>
-        <div className="icon-container icon-lg gradient-bg-primary">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 rounded-2xl border border-amber-200">
+          {/* Custom plus/edit icon */}
           <svg
-            className="w-6 h-6 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+            className="w-6 h-6 text-amber-800"
+            fill="currentColor"
+            viewBox="0 0 20 20"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
+            {isEdit ? (
+              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+            ) : (
+              <path
+                fillRule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clipRule="evenodd"
+              />
+            )}
           </svg>
         </div>
       </div>
@@ -117,8 +120,11 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Company */}
-          <div className="form-group">
-            <label htmlFor="company" className="form-label">
+          <div className="space-y-2">
+            <label
+              htmlFor="company"
+              className="block text-sm font-medium text-stone-700"
+            >
               Company *
             </label>
             <input
@@ -126,26 +132,25 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
               type="text"
               value={formData.company}
               onChange={(e) => handleChange("company", e.target.value)}
-              className={`form-input ${
+              className={`w-full px-3 py-2 border rounded-xl bg-stone-50 focus:outline-none focus:ring-3 focus:ring-amber-200 transition-colors ${
                 errors.company
-                  ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-                  : ""
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                  : "border-stone-200 focus:border-amber-300"
               }`}
               placeholder="e.g., Google, Microsoft, Startup Inc."
             />
             {errors.company && (
-              <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+              <p className="text-red-600 text-sm flex items-center gap-1">
+                {/* Custom warning icon */}
                 <svg
                   className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
                   />
                 </svg>
                 {errors.company}
@@ -154,8 +159,11 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
           </div>
 
           {/* Position */}
-          <div className="form-group">
-            <label htmlFor="position" className="form-label">
+          <div className="space-y-2">
+            <label
+              htmlFor="position"
+              className="block text-sm font-medium text-stone-700"
+            >
               Position *
             </label>
             <input
@@ -163,26 +171,24 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
               type="text"
               value={formData.position}
               onChange={(e) => handleChange("position", e.target.value)}
-              className={`form-input ${
+              className={`w-full px-3 py-2 border rounded-xl bg-stone-50 focus:outline-none focus:ring-3 focus:ring-amber-200 transition-colors ${
                 errors.position
-                  ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-                  : ""
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                  : "border-stone-200 focus:border-amber-300"
               }`}
               placeholder="e.g., Software Engineer, Product Manager"
             />
             {errors.position && (
-              <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+              <p className="text-red-600 text-sm flex items-center gap-1">
                 <svg
                   className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
                   />
                 </svg>
                 {errors.position}
@@ -192,8 +198,11 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
         </div>
 
         {/* Job URL */}
-        <div className="form-group">
-          <label htmlFor="url" className="form-label">
+        <div className="space-y-2">
+          <label
+            htmlFor="url"
+            className="block text-sm font-medium text-stone-700"
+          >
             Job Posting URL *
           </label>
           <input
@@ -201,26 +210,20 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
             type="url"
             value={formData.url}
             onChange={(e) => handleChange("url", e.target.value)}
-            className={`form-input ${
+            className={`w-full px-3 py-2 border rounded-xl bg-stone-50 focus:outline-none focus:ring-3 focus:ring-amber-200 transition-colors ${
               errors.url
-                ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-                : ""
+                ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                : "border-stone-200 focus:border-amber-300"
             }`}
             placeholder="https://company.com/careers/job-posting"
           />
           {errors.url && (
-            <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+            <p className="text-red-600 text-sm flex items-center gap-1">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
                 />
               </svg>
               {errors.url}
@@ -230,8 +233,11 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Application Date */}
-          <div className="form-group">
-            <label htmlFor="dateApplied" className="form-label">
+          <div className="space-y-2">
+            <label
+              htmlFor="dateApplied"
+              className="block text-sm font-medium text-stone-700"
+            >
               Application Date *
             </label>
             <input
@@ -239,25 +245,23 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
               type="date"
               value={formData.dateApplied}
               onChange={(e) => handleChange("dateApplied", e.target.value)}
-              className={`form-input ${
+              className={`w-full px-3 py-2 border rounded-xl bg-stone-50 focus:outline-none focus:ring-3 focus:ring-amber-200 transition-colors ${
                 errors.dateApplied
-                  ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-                  : ""
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+                  : "border-stone-200 focus:border-amber-300"
               }`}
             />
             {errors.dateApplied && (
-              <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
+              <p className="text-red-600 text-sm flex items-center gap-1">
                 <svg
                   className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
                   />
                 </svg>
                 {errors.dateApplied}
@@ -266,15 +270,18 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
           </div>
 
           {/* Status */}
-          <div className="form-group">
-            <label htmlFor="status" className="form-label">
+          <div className="space-y-2">
+            <label
+              htmlFor="status"
+              className="block text-sm font-medium text-stone-700"
+            >
               Status
             </label>
             <select
               id="status"
               value={formData.status}
               onChange={(e) => handleChange("status", e.target.value)}
-              className="form-select"
+              className="w-full px-3 py-2 border border-stone-200 rounded-xl bg-white focus:outline-none focus:ring-3 focus:ring-amber-200 focus:border-amber-300 text-stone-700"
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -285,8 +292,11 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
           </div>
 
           {/* Resume Version */}
-          <div className="form-group">
-            <label htmlFor="resumeVersion" className="form-label">
+          <div className="space-y-2">
+            <label
+              htmlFor="resumeVersion"
+              className="block text-sm font-medium text-stone-700"
+            >
               Resume Version
             </label>
             <input
@@ -294,45 +304,50 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
               type="text"
               value={formData.resumeVersion}
               onChange={(e) => handleChange("resumeVersion", e.target.value)}
-              className="form-input"
+              className="w-full px-3 py-2 border border-stone-200 rounded-xl bg-stone-50 focus:outline-none focus:ring-3 focus:ring-amber-200 focus:border-amber-300"
               placeholder="v2.1, Tech-focused, etc."
             />
           </div>
         </div>
 
         {/* Notes */}
-        <div className="form-group">
-          <label htmlFor="notes" className="form-label">
+        <div className="space-y-2">
+          <label
+            htmlFor="notes"
+            className="block text-sm font-medium text-stone-700"
+          >
             Notes
           </label>
           <textarea
             id="notes"
             value={formData.notes}
             onChange={(e) => handleChange("notes", e.target.value)}
-            className="form-textarea"
+            className="w-full px-3 py-2 border border-stone-200 rounded-xl bg-stone-50 focus:outline-none focus:ring-3 focus:ring-amber-200 focus:border-amber-300 resize-none"
             rows={4}
             placeholder="Add any additional notes about this application..."
           />
         </div>
 
         {/* Form Actions */}
-        <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
-          <button type="button" onClick={onCancel} className="btn-secondary">
+        <div className="flex items-center justify-end gap-4 pt-6 border-t border-stone-200">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-300 text-stone-700 hover:text-stone-800 font-medium py-2.5 px-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 ease-out focus:outline-none focus:ring-3 focus:ring-stone-200"
+          >
             Cancel
           </button>
-          <button type="submit" className="btn-primary">
+          <button
+            type="submit"
+            className="bg-amber-700 hover:bg-amber-800 text-white font-semibold py-2.5 px-5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 ease-out focus:outline-none focus:ring-3 focus:ring-amber-300"
+          >
             <div className="flex items-center gap-2">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              {/* Custom checkmark icon */}
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
                 />
               </svg>
               {isEdit ? "Update Application" : "Save Application"}
