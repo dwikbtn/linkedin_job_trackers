@@ -1,28 +1,31 @@
 import React, { useState, useMemo } from "react";
 import { Job_Application } from "../../../utils/types";
 import { ApplicationCard } from "./ui/ApplicationCard";
+import { ApplicationGridView } from "./ui/ApplicationGridView";
 
 interface ApplicationListProps {
   applications: Job_Application[];
-  onEdit: (application: Job_Application) => void;
+  onEdit: (application: Job_Application) => void; // For inline editing (table view)
   onDelete: (id: string) => void;
-  onViewDetails?: (application: Job_Application) => void;
+  onAdd: (application: Omit<Job_Application, "id">) => void;
+  onViewDetails?: (application: Job_Application) => void; // For form-based editing (grid/list views)
 }
 
 type SortOption = "dateApplied" | "company" | "position" | "status";
-type ViewMode = "grid" | "list";
+type ViewMode = "grid" | "list" | "table";
 
 export const ApplicationList: React.FC<ApplicationListProps> = ({
   applications,
   onEdit,
   onDelete,
+  onAdd,
   onViewDetails,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("dateApplied");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [viewMode, setViewMode] = useState<ViewMode>("table");
 
   // Get unique status values for filter
   const statusOptions = useMemo(() => {
@@ -227,6 +230,26 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
                   <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 8a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
                 </svg>
               </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === "table"
+                    ? "bg-white text-amber-700 shadow-sm"
+                    : "text-stone-600 hover:text-stone-800"
+                }`}
+                title="Table view"
+              >
+                {/* Custom table icon */}
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v1H3V4z" />
+                  <path d="M3 8h14v8a1 1 0 01-1 1H4a1 1 0 01-1-1V8z" />
+                  <path d="M8 8v8m4-8v8" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -266,7 +289,7 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
         </p>
       </div>
 
-      {/* Applications Grid/List */}
+      {/* Applications Grid/List/Table */}
       {filteredAndSortedApplications.length === 0 ? (
         <div className="text-center py-12">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-stone-100 rounded-3xl shadow-sm border border-stone-200 mx-auto mb-4">
@@ -290,13 +313,20 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
             Try adjusting your search or filter criteria.
           </p>
         </div>
+      ) : viewMode === "table" ? (
+        <ApplicationGridView
+          applications={filteredAndSortedApplications}
+          onUpdate={onEdit}
+          onDelete={onDelete}
+          onAdd={onAdd}
+        />
       ) : (
         <div className={viewMode === "grid" ? "jobs-grid" : "jobs-list"}>
           {filteredAndSortedApplications.map((application) => (
             <ApplicationCard
               key={application.id}
               application={application}
-              onEdit={onEdit}
+              onEdit={onViewDetails} // Use form-based editing for card views
               onDelete={onDelete}
               onViewDetails={onViewDetails}
             />

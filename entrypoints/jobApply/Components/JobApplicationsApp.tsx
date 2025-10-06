@@ -136,6 +136,23 @@ export const JobApplicationsApp: React.FC = () => {
     setCurrentView("edit");
   };
 
+  const handleUpdateApplication = async (application: Job_Application) => {
+    try {
+      // Update in storage
+      await sendMessage("updateApplication", application);
+
+      // Update local state
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === application.id ? application : app
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update application:", err);
+      setError("Failed to update application. Please try again.");
+    }
+  };
+
   const handleCancelForm = () => {
     setCurrentView("list");
     setEditingApplication(null);
@@ -279,8 +296,10 @@ export const JobApplicationsApp: React.FC = () => {
         {currentView === "list" && (
           <ApplicationList
             applications={applications}
-            onEdit={handleEditClick}
+            onEdit={handleUpdateApplication}
             onDelete={handleDeleteApplication}
+            onAdd={handleAddApplication}
+            onViewDetails={handleEditClick}
           />
         )}
 
