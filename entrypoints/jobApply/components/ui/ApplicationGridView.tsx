@@ -25,20 +25,28 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
   const [editValue, setEditValue] = useState("");
   const [newRow, setNewRow] = useState<Partial<Job_Application>>({});
   const [showNewRow, setShowNewRow] = useState(false);
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(null);
+  const inputRef = useRef<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  >(null);
 
   useEffect(() => {
     if (editingCell && inputRef.current) {
       inputRef.current.focus();
-      if (inputRef.current instanceof HTMLInputElement || inputRef.current instanceof HTMLTextAreaElement) {
+      if (
+        inputRef.current instanceof HTMLInputElement ||
+        inputRef.current instanceof HTMLTextAreaElement
+      ) {
         inputRef.current.select();
       }
     }
   }, [editingCell]);
 
-  const handleCellClick = (application: Job_Application, column: keyof Job_Application) => {
+  const handleCellClick = (
+    application: Job_Application,
+    column: keyof Job_Application
+  ) => {
     if (column === "id") return; // Don't allow editing ID
-    
+
     setEditingCell({ rowId: application.id, column });
     setEditValue(String(application[column] || ""));
   };
@@ -46,7 +54,9 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
   const handleCellUpdate = () => {
     if (!editingCell) return;
 
-    const application = applications.find(app => app.id === editingCell.rowId);
+    const application = applications.find(
+      (app) => app.id === editingCell.rowId
+    );
     if (!application) return;
 
     const updatedApplication = {
@@ -69,8 +79,11 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
     }
   };
 
-  const handleNewRowChange = (column: keyof Omit<Job_Application, "id">, value: string) => {
-    setNewRow(prev => ({ ...prev, [column]: value }));
+  const handleNewRowChange = (
+    column: keyof Omit<Job_Application, "id">,
+    value: string
+  ) => {
+    setNewRow((prev) => ({ ...prev, [column]: value }));
   };
 
   const handleAddRow = () => {
@@ -109,14 +122,22 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
     };
 
     return (
-      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${config[status as keyof typeof config] || config.pending}`}>
+      <span
+        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${
+          config[status as keyof typeof config] || config.pending
+        }`}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     );
   };
 
-  const renderCell = (application: Job_Application, column: keyof Job_Application) => {
-    const isEditing = editingCell?.rowId === application.id && editingCell?.column === column;
+  const renderCell = (
+    application: Job_Application,
+    column: keyof Job_Application
+  ) => {
+    const isEditing =
+      editingCell?.rowId === application.id && editingCell?.column === column;
     const value = application[column] || "";
 
     if (isEditing) {
@@ -128,7 +149,9 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
             onChange={(e) => {
               setEditValue(e.target.value);
               // Immediately update for status changes
-              const application = applications.find(app => app.id === editingCell?.rowId);
+              const application = applications.find(
+                (app) => app.id === editingCell?.rowId
+              );
               if (application) {
                 const updatedApplication = {
                   ...application,
@@ -143,7 +166,7 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
             onKeyDown={handleKeyDown}
             className="w-full px-2 py-1 border border-amber-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-200"
           >
-            {STATUS_OPTIONS.map(status => (
+            {STATUS_OPTIONS.map((status) => (
               <option key={status} value={status}>
                 {status.charAt(0).toUpperCase() + status.slice(1)}
               </option>
@@ -221,7 +244,7 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
           onChange={(e) => handleNewRowChange(column, e.target.value)}
           className="w-full px-2 py-1 border border-stone-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-200"
         >
-          {STATUS_OPTIONS.map(status => (
+          {STATUS_OPTIONS.map((status) => (
             <option key={status} value={status}>
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </option>
@@ -248,15 +271,25 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
         value={newRow[column] || ""}
         onChange={(e) => handleNewRowChange(column, e.target.value)}
         placeholder={
-          column === "company" ? "Company*" :
-          column === "position" ? "Position*" :
-          column === "dateApplied" ? "Date Applied*" :
-          column === "url" ? "Job URL" :
-          column === "resumeVersion" ? "Resume Version" : ""
+          column === "company"
+            ? "Company*"
+            : column === "position"
+            ? "Position*"
+            : column === "dateApplied"
+            ? "Date Applied*"
+            : column === "url"
+            ? "Job URL"
+            : column === "resumeVersion"
+            ? "Resume Version"
+            : ""
         }
         className={`w-full px-2 py-1 border border-stone-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-200 ${
-          (column === "company" || column === "position" || column === "dateApplied") && !newRow[column] 
-            ? "border-red-300" : ""
+          (column === "company" ||
+            column === "position" ||
+            column === "dateApplied") &&
+          !newRow[column]
+            ? "border-red-300"
+            : ""
         }`}
       />
     );
@@ -345,7 +378,11 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
                     className="opacity-0 group-hover:opacity-100 p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                     title="Delete application"
                   >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
@@ -356,31 +393,19 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
                 </td>
               </tr>
             ))}
-            
+
             {/* New Row */}
             {showNewRow && (
               <tr className="bg-amber-50 border-2 border-amber-200">
-                <td className="px-4 py-3">
-                  {renderNewRowCell("company")}
-                </td>
-                <td className="px-4 py-3">
-                  {renderNewRowCell("position")}
-                </td>
-                <td className="px-4 py-3">
-                  {renderNewRowCell("dateApplied")}
-                </td>
-                <td className="px-4 py-3">
-                  {renderNewRowCell("status")}
-                </td>
-                <td className="px-4 py-3">
-                  {renderNewRowCell("url")}
-                </td>
+                <td className="px-4 py-3">{renderNewRowCell("company")}</td>
+                <td className="px-4 py-3">{renderNewRowCell("position")}</td>
+                <td className="px-4 py-3">{renderNewRowCell("dateApplied")}</td>
+                <td className="px-4 py-3">{renderNewRowCell("status")}</td>
+                <td className="px-4 py-3">{renderNewRowCell("url")}</td>
                 <td className="px-4 py-3">
                   {renderNewRowCell("resumeVersion")}
                 </td>
-                <td className="px-4 py-3">
-                  {renderNewRowCell("notes")}
-                </td>
+                <td className="px-4 py-3">{renderNewRowCell("notes")}</td>
                 <td className="px-4 py-3 text-center">
                   <div className="flex items-center justify-center gap-1">
                     <button
@@ -388,7 +413,11 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
                       className="p-1.5 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
                       title="Save new application"
                     >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
                         <path
                           fillRule="evenodd"
                           d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -404,7 +433,11 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
                       className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       title="Cancel"
                     >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
                         <path
                           fillRule="evenodd"
                           d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -419,7 +452,7 @@ export const ApplicationGridView: React.FC<ApplicationGridViewProps> = ({
           </tbody>
         </table>
       </div>
-      
+
       {/* Add New Row Button */}
       {!showNewRow && (
         <div className="px-4 py-3 border-t border-stone-200 bg-stone-50">

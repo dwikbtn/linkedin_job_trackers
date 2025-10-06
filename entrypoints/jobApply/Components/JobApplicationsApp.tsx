@@ -143,9 +143,7 @@ export const JobApplicationsApp: React.FC = () => {
 
       // Update local state
       setApplications((prev) =>
-        prev.map((app) =>
-          app.id === application.id ? application : app
-        )
+        prev.map((app) => (app.id === application.id ? application : app))
       );
     } catch (err) {
       console.error("Failed to update application:", err);
