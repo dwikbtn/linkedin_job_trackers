@@ -8,3 +8,38 @@ export type Job_Application = {
   resumeVersion?: string;
   notes?: string;
 };
+
+// Smart Capture types
+export interface SmartCaptureMapping {
+  domain: string;
+  jobTitleSelector: string;
+  companySelector: string;
+  applyButtonSelector: string;
+  previewJobTitle: string;
+  previewCompany: string;
+  createdAt: string;
+}
+
+export interface SmartCaptureStep {
+  id: "jobTitle" | "company" | "applyButton";
+  title: string;
+  description: string;
+  completed: boolean;
+  selector?: string;
+  previewText?: string;
+}
+
+export interface SmartCaptureState {
+  isActive: boolean;
+  currentStep: number;
+  steps: SmartCaptureStep[];
+  selectedElement?: HTMLElement;
+  hoveredElement?: HTMLElement;
+}
+
+export interface ElementInfo {
+  selector: string;
+  element: HTMLElement;
+  text: string;
+  tagName: string;
+}

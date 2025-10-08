@@ -3,6 +3,7 @@ import { onMessage } from "@/utils/messaging";
 import { JOBAPPLICATIONLIST } from "@/utils/storageName";
 import { Job_Application } from "@/utils/types";
 import extractJobIdFromUrl from "@/utils/utils";
+import { SmartCaptureStorage } from "@/utils/smartCaptureStorage";
 
 export default defineBackground(() => {
   // Initialize extension when background script loads
@@ -108,6 +109,35 @@ onMessage("deleteApplication", async (msg) => {
   if (jobApplications) {
     const updatedApplications = jobApplications.filter((app) => app.id !== id);
     await storage.setItem(`local:${JOBAPPLICATIONLIST}`, updatedApplications);
+  }
+});
+
+// Smart Capture message handlers
+onMessage("autoSaveFromSmartCapture", async (msg) => {
+  console.log("Auto-saving application from Smart Capture:", msg.data);
+
+  const application = msg.data as Job_Application;
+  const jobApplications = (await storage.getItem(
+    `local:${JOBAPPLICATIONLIST}`
+  )) as Job_Application[] | undefined;
+
+  const updatedApplications = jobApplications
+    ? [...jobApplications, application]
+    : [application];
+
+  await storage.setItem(`local:${JOBAPPLICATIONLIST}`, updatedApplications);
+
+  console.log("Application auto-saved successfully:", application);
+});
+
+onMessage("getSmartCaptureMappings", async () => {
+  console.log("Retrieving Smart Capture mappings");
+  try {
+    const mappings = await SmartCaptureStorage.getAllMappings();
+    return mappings;
+  } catch (error) {
+    console.error("Error retrieving Smart Capture mappings:", error);
+    return [];
   }
 });
 
