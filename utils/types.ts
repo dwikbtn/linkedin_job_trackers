@@ -43,3 +43,5 @@ export interface ElementInfo {
   text: string;
   tagName: string;
 }
+
+export const CONTENT_ROOT_ID = "career-tracker-root";

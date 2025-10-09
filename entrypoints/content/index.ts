@@ -1,25 +1,45 @@
 //import tailwind.css from assets
-import "../../assets/tailwind.css";
+import "~/assets/tailwind.css";
 
-import { Job_Application } from "@/utils/types";
+import { CONTENT_ROOT_ID, Job_Application } from "@/utils/types";
 import extractJobIdFromUrl from "@/utils/utils";
 import { SmartCaptureUI } from "@/utils/smartCaptureUI";
 import { SmartCaptureStorage } from "@/utils/smartCaptureStorage";
 
 export default defineContentScript({
-  matches: ["*://*/*"], // Changed to match all websites for Smart Capture
-  main(ctx) {
+  matches: ["<all_urls>"], // Changed to match all websites for Smart Capture
+  cssInjectionMode: "ui",
+  async main(ctx) {
     console.log("Content script loaded!", {
       id: browser.runtime.id,
       domain: window.location.hostname,
     });
 
-    // Initialize Smart Capture UI
-    const smartCaptureUI = new SmartCaptureUI();
-    window.smartCaptureUI = smartCaptureUI;
+    // Declare smartCaptureUI in main scope
+    let smartCaptureUI: SmartCaptureUI;
 
-    // Initialize runtime detection for existing mappings
-    initializeRuntimeDetection();
+    const ui = await createShadowRootUi(ctx, {
+      name: "career-tracker-root",
+      position: "inline",
+      anchor: "body",
+      onMount(container) {
+        // Define how your UI will be mounted inside the container
+        const app = document.createElement("div");
+        app.id = CONTENT_ROOT_ID;
+        // app.textContent = "Hello world!";
+        container.append(app);
+
+        // Initialize Smart Capture UI with the shadow root container
+        smartCaptureUI = new SmartCaptureUI(app);
+        window.smartCaptureUI = smartCaptureUI;
+
+        // Initialize runtime detection for existing mappings
+        initializeRuntimeDetection();
+      },
+    });
+
+    // 4. Mount the UI
+    ui.mount();
 
     // Listen for existing job collection messages (LinkedIn specific)
     onMessage("CSgetDataFromJobCollection", () => {
@@ -225,7 +245,11 @@ function showNotification(
   `;
 
   notification.textContent = message;
-  document.body.appendChild(notification);
+  
+  // Try to append to shadow root container, fall back to document.body
+  const shadowContainer = document.getElementById(CONTENT_ROOT_ID);
+  const targetContainer = shadowContainer || document.body;
+  targetContainer.appendChild(notification);
 
   // Auto-remove after 4 seconds
   setTimeout(() => {

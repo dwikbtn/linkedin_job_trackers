@@ -1,4 +1,4 @@
-import { SmartCaptureState, SmartCaptureStep, ElementInfo } from "./types";
+import { SmartCaptureState, SmartCaptureStep, ElementInfo, CONTENT_ROOT_ID } from "./types";
 import { sendMessage } from "./messaging";
 
 /**
@@ -11,8 +11,11 @@ export class SmartCaptureUI {
   private highlightBox: HTMLElement | null = null;
   private tooltip: HTMLElement | null = null;
   private originalStyles: Map<HTMLElement, string> = new Map();
+  private isProcessingSelection: boolean = false;
+  private shadowRootContainer: HTMLElement | null = null;
 
-  constructor() {
+  constructor(shadowRootContainer?: HTMLElement) {
+    this.shadowRootContainer = shadowRootContainer || null;
     this.state = {
       isActive: false,
       currentStep: 0,
@@ -41,6 +44,42 @@ export class SmartCaptureUI {
   }
 
   /**
+   * Get the shadow root container element
+   */
+  private getShadowRootContainer(): HTMLElement {
+    // Use the passed shadow root container if available
+    if (this.shadowRootContainer) {
+      return this.shadowRootContainer;
+    }
+
+    // First, try to find the shadow host element
+    const shadowHost = document.querySelector('[data-shadow-host]') || 
+                      document.querySelector('.extension-shadow-host') ||
+                      document.getElementById('extension-root');
+    
+    if (shadowHost && shadowHost.shadowRoot) {
+      const container = shadowHost.shadowRoot.getElementById(CONTENT_ROOT_ID);
+      if (container) {
+        return container;
+      }
+    }
+    
+    // Alternative: if the shadow root is attached to a known element
+    const hostElements = document.querySelectorAll('*');
+    for (const element of hostElements) {
+      if (element.shadowRoot) {
+        const container = element.shadowRoot.getElementById(CONTENT_ROOT_ID);
+        if (container) {
+          return container;
+        }
+      }
+    }
+    
+    console.warn(`Shadow root container with id "${CONTENT_ROOT_ID}" not found, falling back to document.body`);
+    return document.body;
+  }
+
+  /**
    * Start the Smart Capture process
    */
   startCapture(): void {
@@ -48,6 +87,7 @@ export class SmartCaptureUI {
 
     this.state.isActive = true;
     this.state.currentStep = 0;
+    this.isProcessingSelection = false; // Reset processing flag
     this.createOverlay();
     this.createModal();
     this.createHighlightBox();
@@ -82,7 +122,8 @@ export class SmartCaptureUI {
       z-index: 999999;
       pointer-events: auto;
     `;
-    document.body.appendChild(this.overlay);
+
+    this.getShadowRootContainer().appendChild(this.overlay);
   }
 
   /**
@@ -129,7 +170,7 @@ export class SmartCaptureUI {
       transition: all 0.2s ease;
       display: none;
     `;
-    document.body.appendChild(this.highlightBox);
+    this.getShadowRootContainer().appendChild(this.highlightBox);
   }
 
   /**
@@ -154,7 +195,7 @@ export class SmartCaptureUI {
       max-width: 200px;
       word-wrap: break-word;
     `;
-    document.body.appendChild(this.tooltip);
+    this.getShadowRootContainer().appendChild(this.tooltip);
   }
 
   /**
@@ -212,9 +253,18 @@ export class SmartCaptureUI {
     // Skip our own overlay elements
     if (this.isOverlayElement(target)) return;
 
-    // Prevent the default action
+    // Prevent the default action and stop propagation immediately
     event.preventDefault();
     event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    console.log("Click detected on element:", {
+      tagName: target.tagName,
+      className: target.className,
+      id: target.id,
+      currentStep: this.state.currentStep,
+      isProcessing: this.isProcessingSelection,
+    });
 
     this.selectElement(target);
   }
@@ -301,12 +351,27 @@ export class SmartCaptureUI {
     const currentStep = this.state.steps[this.state.currentStep];
     if (!currentStep) return;
 
+    // Prevent multiple rapid selections
+    if (this.isProcessingSelection) {
+      console.log("Selection already in progress, ignoring...");
+      return;
+    }
+
+    this.isProcessingSelection = true;
+
     const selector = this.generateSelector(element);
     const text = this.getElementText(element);
 
     currentStep.selector = selector;
     currentStep.previewText = text;
     currentStep.completed = true;
+
+    console.log(`Step ${this.state.currentStep} completed:`, {
+      stepId: currentStep.id,
+      selector: selector,
+      text: text,
+      totalSteps: this.state.steps.length,
+    });
 
     // Highlight selected element briefly
     if (this.highlightBox) {
@@ -325,20 +390,32 @@ export class SmartCaptureUI {
     // Remove event listeners temporarily
     this.removeEventListeners();
 
-    // Move to next step or complete
-    if (this.state.currentStep < this.state.steps.length - 1) {
-      this.state.currentStep++;
-      // Show overlay and modal with next step
-      if (this.overlay) {
-        this.overlay.style.display = "block";
+    // Add a small delay to prevent rapid successive selections
+    setTimeout(() => {
+      // Move to next step or complete
+      if (this.state.currentStep < this.state.steps.length - 1) {
+        this.state.currentStep++;
+        console.log(
+          `Moving to step ${this.state.currentStep} (${
+            this.state.steps[this.state.currentStep].id
+          })`
+        );
+        // Show overlay and modal with next step
+        if (this.overlay) {
+          this.overlay.style.display = "block";
+        }
+        if (this.modal) {
+          this.modal.style.display = "block";
+          this.updateModal();
+        }
+      } else {
+        console.log("All steps completed, calling completeCapture()");
+        this.completeCapture();
       }
-      if (this.modal) {
-        this.modal.style.display = "block";
-        this.updateModal();
-      }
-    } else {
-      this.completeCapture();
-    }
+
+      // Reset the processing flag
+      this.isProcessingSelection = false;
+    }, 300);
   }
 
   /**
@@ -502,7 +579,7 @@ export class SmartCaptureUI {
       floatingInstruction.id = "smart-capture-floating-instruction";
       floatingInstruction.style.cssText = `
         position: fixed;
-        top: 20px;
+        bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
         background: rgba(255, 255, 255, 0.95);
@@ -516,7 +593,7 @@ export class SmartCaptureUI {
         max-width: 400px;
         text-align: center;
       `;
-      document.body.appendChild(floatingInstruction);
+      this.getShadowRootContainer().appendChild(floatingInstruction);
     }
 
     floatingInstruction.innerHTML = `
@@ -733,9 +810,23 @@ export class SmartCaptureUI {
    * Complete the capture process
    */
   private completeCapture(): void {
-    // Show overlay for completion modal
-    if (this.overlay) {
-      this.overlay.style.display = "block";
+    console.log("Complete capture called. Current state:", {
+      currentStep: this.state.currentStep,
+      steps: this.state.steps.map((step) => ({
+        id: step.id,
+        completed: step.completed,
+        selector: step.selector,
+        previewText: step.previewText,
+      })),
+    });
+
+    // Remove floating instruction if it exists
+    const floatingInstruction = document.getElementById(
+      "smart-capture-floating-instruction"
+    );
+    if (floatingInstruction) {
+      floatingInstruction.remove();
+      console.log("Removed floating instruction before completion modal");
     }
 
     // Collect all the captured information
@@ -749,15 +840,32 @@ export class SmartCaptureUI {
       createdAt: new Date().toISOString(),
     };
 
-    // Show completion message
-    this.showCompletionModal(mapping);
+    console.log("Smart Capture mapping to be saved:", mapping);
+
+    // Show overlay for completion modal
+    if (this.overlay) {
+      this.overlay.style.display = "block";
+    }
+
+    // Ensure modal is visible and show completion content
+    if (this.modal) {
+      this.modal.style.display = "block";
+      this.showCompletionModal(mapping);
+    } else {
+      console.error("Modal element not found during completion");
+    }
   }
 
   /**
    * Show completion modal with save option
    */
   private showCompletionModal(mapping: any): void {
-    if (!this.modal) return;
+    if (!this.modal) {
+      console.error("Modal element not found in showCompletionModal");
+      return;
+    }
+
+    console.log("Showing completion modal with mapping:", mapping);
 
     this.modal.innerHTML = `
       <div class="text-center mb-6">
@@ -780,11 +888,19 @@ export class SmartCaptureUI {
         <div class="bg-gray-50 rounded-xl p-4">
           <h4 class="text-sm font-semibold text-gray-700 mb-2">Job Title</h4>
           <p class="text-sm text-gray-900">${mapping.previewJobTitle}</p>
+          <p class="text-xs text-gray-500 mt-1">Selector: ${mapping.jobTitleSelector}</p>
         </div>
         
         <div class="bg-gray-50 rounded-xl p-4">
           <h4 class="text-sm font-semibold text-gray-700 mb-2">Company</h4>
           <p class="text-sm text-gray-900">${mapping.previewCompany}</p>
+          <p class="text-xs text-gray-500 mt-1">Selector: ${mapping.companySelector}</p>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Apply Button</h4>
+          <p class="text-sm text-gray-900">${mapping.applyButtonSelector}</p>
+          <p class="text-xs text-gray-500 mt-1">Will detect clicks on this element</p>
         </div>
       </div>
 
@@ -799,6 +915,8 @@ export class SmartCaptureUI {
       </div>
     `;
 
+    console.log("Completion modal HTML set, now adding event listeners...");
+
     // Add event listeners to the buttons
     const cancelBtn = this.modal.querySelector(
       "#completion-cancel-btn"
@@ -809,11 +927,19 @@ export class SmartCaptureUI {
 
     if (cancelBtn) {
       cancelBtn.addEventListener("click", () => this.stopCapture());
+      console.log("Cancel button event listener added");
+    } else {
+      console.error("Cancel button not found in completion modal");
     }
 
     if (saveBtn) {
       saveBtn.addEventListener("click", () => this.saveMapping(mapping));
+      console.log("Save button event listener added");
+    } else {
+      console.error("Save button not found in completion modal");
     }
+
+    console.log("Completion modal setup complete");
   }
 
   /**
@@ -847,7 +973,7 @@ export class SmartCaptureUI {
       border: 1px solid rgba(255, 255, 255, 0.2);
     `;
 
-    document.body.appendChild(notification);
+    this.getShadowRootContainer().appendChild(notification);
 
     setTimeout(() => {
       notification.remove();
@@ -891,6 +1017,7 @@ export class SmartCaptureUI {
     // Reset state
     this.state.isActive = false;
     this.state.currentStep = 0;
+    this.isProcessingSelection = false; // Reset processing flag
     this.state.steps.forEach((step) => {
       step.completed = false;
       step.selector = undefined;
