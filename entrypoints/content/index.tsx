@@ -21,6 +21,7 @@ export default defineContentScript({
       name: "career-tracker-root",
       position: "inline",
       anchor: "body",
+      append: "first",
       onMount(container) {
         // Define how your UI will be mounted inside the container
         const app = document.createElement("div");
@@ -57,9 +58,9 @@ export default defineContentScript({
 
     // Listen for Smart Capture messages
     onMessage("startSmartCapture", () => {
-      console.log("startSmartCapture message received");
-      console.log(appRoot, "appRoot check");
       if (reactRoot && appRoot) {
+        console.log("Rendering SmartCapture component");
+        reactRoot.render(null); // Unmount previous instance
         reactRoot.render(<SmartCapture />);
       }
     });

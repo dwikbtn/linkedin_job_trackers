@@ -7,6 +7,11 @@ const SmartCapture = () => {
   const [currentStep, setCurrentStep] = React.useState<
     "jobTitle" | "company" | "applyButton"
   >("jobTitle");
+  const [stepData, setStepData] = React.useState<{
+    jobTitle?: { text: string; selector: string };
+    company?: { text: string; selector: string };
+    applyButton?: { text: string; selector: string };
+  }>({});
 
   function handleStepComplete(step: "jobTitle" | "company" | "applyButton") {
     console.log("Step completed:", step);
@@ -22,6 +27,7 @@ const SmartCapture = () => {
   }>({});
 
   const [isCapturing, setIsCapturing] = React.useState(false);
+  console.log(Object.keys(capturedData).length);
 
   return (
     <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
@@ -37,7 +43,7 @@ const SmartCapture = () => {
           currentStep={currentStep}
           onStepComplete={handleStepComplete}
           onCancel={() => setStartStep(false)}
-          onRetry={handleRetry}
+          onRetry={Object.keys(stepData).length === 0 ? undefined : handleRetry}
           capturedData={capturedData}
           isCapturing={isCapturing}
         />
