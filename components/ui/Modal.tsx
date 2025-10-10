@@ -1,5 +1,5 @@
 import React from "react";
-import Overlay from "../entrypoints/jobApply/components/ui/Overlay";
+import Overlay from "./Overlay";
 
 interface ModalProps {
   isOpen: boolean;

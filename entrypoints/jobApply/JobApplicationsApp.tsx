@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Job_Application } from "../../../utils/types";
-import { sendMessage } from "../../../utils/messaging";
-import { ApplicationList } from "./ApplicationList";
-import { ApplicationForm } from "../../../components/ApplicationForm";
-import Loading from "../../../components/Loading";
-import Error from "../../../components/Error";
+import { Job_Application } from "../../utils/types";
+import { sendMessage } from "../../utils/messaging";
+import { ApplicationList } from "@/components/ui/ApplicationList";
+import { ApplicationForm } from "@/components/ui/ApplicationForm";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
 
 type ViewState = "list" | "add" | "edit";
 

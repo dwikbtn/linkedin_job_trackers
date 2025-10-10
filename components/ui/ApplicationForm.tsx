@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Job_Application } from "../utils/types";
+import { Job_Application } from "@/utils/types";
 
 interface ApplicationFormProps {
   application?: Job_Application;
