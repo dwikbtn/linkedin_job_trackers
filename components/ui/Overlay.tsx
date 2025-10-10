@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface OverlayProps {
   isVisible: boolean;
@@ -11,15 +11,15 @@ interface OverlayProps {
 const Overlay: React.FC<OverlayProps> = ({
   isVisible,
   onClick,
-  className = '',
+  className = "",
   zIndex = 1000,
-  children
+  children,
 }) => {
   if (!isVisible) return null;
 
   return (
     <div
-      className={`fixed inset-0 bg-black bg-opacity-50 ${className}`}
+      className={`fixed inset-0 bg-black/25 ${className}`}
       style={{ zIndex }}
       onClick={onClick}
     >

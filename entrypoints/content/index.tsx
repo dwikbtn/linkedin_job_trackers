@@ -3,6 +3,8 @@ import "~/assets/tailwind.css";
 
 import { CONTENT_ROOT_ID, Job_Application } from "@/utils/types";
 import extractJobIdFromUrl from "@/utils/utils";
+import { createRoot } from "react-dom/client";
+import SmartCapture from "@/components/SmartCapture/SmartCapture";
 
 export default defineContentScript({
   matches: ["<all_urls>"], // Changed to match all websites for Smart Capture
@@ -14,6 +16,7 @@ export default defineContentScript({
     });
 
     let appRoot: HTMLElement | null = null;
+    let reactRoot: ReturnType<typeof createRoot> | null = null;
     const ui = await createShadowRootUi(ctx, {
       name: "career-tracker-root",
       position: "inline",
@@ -25,6 +28,8 @@ export default defineContentScript({
         // app.textContent = "Hello world!";
         appRoot = app;
         container.append(app);
+
+        reactRoot = createRoot(appRoot);
       },
     });
 
@@ -54,8 +59,8 @@ export default defineContentScript({
     onMessage("startSmartCapture", () => {
       console.log("startSmartCapture message received");
       console.log(appRoot, "appRoot check");
-      if (appRoot) {
-        appRoot.innerHTML = "<p>Smart Capture is active...</p>";
+      if (reactRoot && appRoot) {
+        reactRoot.render(<SmartCapture />);
       }
     });
   },
