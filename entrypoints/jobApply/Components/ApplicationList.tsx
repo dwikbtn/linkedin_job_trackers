@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Job_Application } from "../../../utils/types";
-import { ApplicationCard } from "./ui/ApplicationCard";
-import { ApplicationGridView } from "./ui/ApplicationGridView";
+import { ApplicationCard } from "../../../components/ApplicationCard";
+import { ApplicationGridView } from "../../../components/ApplicationGridView";
 
 interface ApplicationListProps {
   applications: Job_Application[];

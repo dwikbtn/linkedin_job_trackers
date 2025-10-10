@@ -128,94 +128,23 @@ function App() {
     alert("Settings page coming soon!");
   };
 
-  const handleSmartCapture = async () => {
+  async function handleStartSmartCapture() {
+    const tabId = (
+      await browser.tabs.query({ active: true, currentWindow: true })
+    )[0].id;
+    if (tabId === undefined) {
+      alert("Could not determine the active tab. Please try again.");
+      return;
+    }
     try {
-      // Get the active tab
-      const [tab] = await browser.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-
-      if (!tab.id) {
-        alert("Unable to access current tab");
-        return;
-      }
-
-      // Close the popup
+      await sendMessage("startSmartCapture", undefined, tabId);
+      // Close the popup after starting smart capture
       window.close();
-
-      console.log("Initiating Smart Capture on tab:", tab);
-      // Send message to content script to start Smart Capture
-      await sendMessage("startSmartCapture", undefined, tab.id);
     } catch (error) {
       console.error("Error starting Smart Capture:", error);
       alert("Failed to start Smart Capture. Please try again.");
     }
-  };
-
-  const SmartCaptureModal = () => (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white/95 backdrop-blur-md border border-white/60 rounded-3xl shadow-2xl max-w-md w-full p-6">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
-            <svg
-              className="w-8 h-8 text-purple-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.122 2.122"
-              ></path>
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-stone-800 mb-2">
-            Smart Capture
-          </h2>
-          <p className="text-sm text-stone-600 leading-relaxed">
-            Teach the extension which elements on this website correspond to job
-            titles, company names, and apply buttons. Once configured, the
-            extension will automatically capture job applications when you click
-            apply.
-          </p>
-        </div>
-
-        <div className="space-y-4 mb-6">
-          <div className="bg-stone-50/80 border border-stone-200 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-stone-800 mb-2">
-              How it works:
-            </h3>
-            <ol className="text-xs text-stone-600 space-y-1">
-              <li>
-                1. Click elements to identify job title, company, and apply
-                button
-              </li>
-              <li>2. The extension saves these selectors for this website</li>
-              <li>3. Future applications are automatically captured</li>
-            </ol>
-          </div>
-        </div>
-
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowSmartCaptureModal(false)}
-            className="flex-1 bg-white border border-stone-200 text-stone-700 font-medium py-3 px-4 rounded-xl hover:bg-stone-50 transition-colors focus:outline-none focus:ring-2 focus:ring-stone-200"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSmartCapture}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
-          >
-            Start Setup
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  }
 
   return (
     <div className="w-80 min-h-96 bg-stone-50 relative">
@@ -399,7 +328,7 @@ function App() {
         <div className="space-y-3">
           {/* Smart Capture Button */}
           <button
-            onClick={() => setShowSmartCaptureModal(true)}
+            onClick={() => handleStartSmartCapture()}
             className="group w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 ease-out focus:outline-none focus:ring-3 focus:ring-purple-300 relative"
           >
             <div className="flex items-center justify-center gap-3">
@@ -514,9 +443,6 @@ function App() {
             </div>
           </div>
         </div>
-
-        {/* Smart Capture Modal */}
-        {showSmartCaptureModal && <SmartCaptureModal />}
       </div>
     </div>
   );

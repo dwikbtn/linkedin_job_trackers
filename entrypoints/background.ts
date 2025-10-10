@@ -3,7 +3,6 @@ import { onMessage } from "@/utils/messaging";
 import { JOBAPPLICATIONLIST } from "@/utils/storageName";
 import { Job_Application } from "@/utils/types";
 import extractJobIdFromUrl from "@/utils/utils";
-import { SmartCaptureStorage } from "@/utils/smartCaptureStorage";
 
 export default defineBackground(() => {
   // Initialize extension when background script loads
@@ -112,35 +111,6 @@ onMessage("deleteApplication", async (msg) => {
   }
 });
 
-// Smart Capture message handlers
-onMessage("autoSaveFromSmartCapture", async (msg) => {
-  console.log("Auto-saving application from Smart Capture:", msg.data);
-
-  const application = msg.data as Job_Application;
-  const jobApplications = (await storage.getItem(
-    `local:${JOBAPPLICATIONLIST}`
-  )) as Job_Application[] | undefined;
-
-  const updatedApplications = jobApplications
-    ? [...jobApplications, application]
-    : [application];
-
-  await storage.setItem(`local:${JOBAPPLICATIONLIST}`, updatedApplications);
-
-  console.log("Application auto-saved successfully:", application);
-});
-
-onMessage("getSmartCaptureMappings", async () => {
-  console.log("Retrieving Smart Capture mappings");
-  try {
-    const mappings = await SmartCaptureStorage.getAllMappings();
-    return mappings;
-  } catch (error) {
-    console.error("Error retrieving Smart Capture mappings:", error);
-    return [];
-  }
-});
-
 async function initStorage() {
   // Initialize storage with default values
   const jobApplications = (await storage.getItem(
@@ -170,3 +140,18 @@ function detectJobPostFromCollectionsPage(tab: Browser.tabs.Tab) {
     sendMessage("CSgetDataFromJobCollection", undefined, tab.id);
   }
 }
+
+//NOTE: HOW TO RECORD SMART CAPTURE STEPS
+// 1. User clicks "Start Smart Capture" in popup -> sends "startSmartCapture" message to content script
+// 2. Content script activates smart capture mode, Shows overlay UI, with short explain what smart capture is
+// 3. user clicks Okay, Show Step 1: "Select Job Title" -> Instruct user to hover and click on job title element
+// 4. User hovers over elements, we highlight them, user clicks on an element -> send "captureElement" message to background with stepId "jobTitle"
+// 5. Background receives message, sends back element info (selector, text) to content script
+// 6. Content script shows preview of captured element, asks user to confirm or retry
+// 7. If user confirms, send "confirmElement" message to background with stepId and element info
+// 8. Background saves the mapping for the domain in storage
+// 9. Content script moves to next step: "Select Company Name", repeat steps 4-8
+// 10. Next step: "Select Apply Button", repeat steps 4-8
+// 11. After all steps completed, show summary of captured data, ask user to save or restart
+// 12. If saved, store the mapping in background storage for future use on this domain
+// 13. User can stop smart capture anytime by clicking "Stop Smart Capture" button, which sends "stopSmartCapture" message to background

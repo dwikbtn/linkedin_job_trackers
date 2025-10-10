@@ -1,5 +1,5 @@
 import React from "react";
-import { Job_Application } from "../../../../utils/types";
+import { Job_Application } from "../utils/types";
 
 interface ApplicationCardProps {
   application: Job_Application;

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Job_Application } from "../../../../utils/types";
+import { Job_Application } from "../utils/types";
 
 interface ApplicationGridViewProps {
   applications: Job_Application[];

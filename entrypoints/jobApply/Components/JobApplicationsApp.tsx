@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Job_Application } from "../../../utils/types";
 import { sendMessage } from "../../../utils/messaging";
 import { ApplicationList } from "./ApplicationList";
-import { ApplicationForm } from "./ui/ApplicationForm";
-import Loading from "./ui/Loading";
-import Error from "./ui/Error";
+import { ApplicationForm } from "../../../components/ApplicationForm";
+import Loading from "../../../components/Loading";
+import Error from "../../../components/Error";
 
 type ViewState = "list" | "add" | "edit";
 
