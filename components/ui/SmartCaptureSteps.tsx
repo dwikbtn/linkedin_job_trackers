@@ -4,9 +4,10 @@ export type SmartCaptureStep = "jobTitle" | "company" | "applyButton";
 
 interface SmartCaptureStepsProps {
   currentStep: SmartCaptureStep;
-  onStepComplete?: (step: SmartCaptureStep) => void;
   onCancel?: () => void;
   onRetry?: () => void;
+  onStartRecord?: () => void;
+  onCompleteRecord?: () => void;
   capturedData?: {
     jobTitle?: { text: string; selector: string };
     company?: { text: string; selector: string };
@@ -17,9 +18,10 @@ interface SmartCaptureStepsProps {
 
 const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
   currentStep,
-  onStepComplete,
   onCancel,
   onRetry,
+  onStartRecord,
+  onCompleteRecord,
   capturedData = {},
   isCapturing = false,
 }) => {
@@ -55,6 +57,11 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
   const isStepCompleted = (stepId: SmartCaptureStep) => {
     return capturedData[stepId] !== undefined;
   };
+
+  const allStepsCompleted =
+    isStepCompleted("jobTitle") &&
+    isStepCompleted("company") &&
+    isStepCompleted("applyButton");
 
   const getStepStatus = (stepId: SmartCaptureStep, index: number) => {
     if (isStepCompleted(stepId)) return "completed";
@@ -179,17 +186,43 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
             {currentStepData.instruction}
           </p>
 
-          {isCapturing && (
-            <div className="flex items-center space-x-2 text-blue-600">
-              <div className="animate-pulse w-2 h-2 bg-blue-600 rounded-full"></div>
-              <span className="text-xs">Waiting for your selection...</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {isCapturing ? (
+                <>
+                  <div className="animate-pulse w-2 h-2 bg-blue-600 rounded-full"></div>
+                  <span className="text-xs text-blue-600">
+                    Waiting for your selection...
+                  </span>
+                </>
+              ) : (
+                onStartRecord && (
+                  <button
+                    onClick={onStartRecord}
+                    className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                  >
+                    <svg
+                      className="w-3 h-3 mr-1"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Start Record
+                  </button>
+                )
+              )}
             </div>
-          )}
+          </div>
         </div>
       )}
 
       {/* Action Buttons */}
-      <div className="flex space-x-3">
+      <div className="flex space-x-3 items-center">
         {onCancel && (
           <button
             onClick={onCancel}
@@ -205,6 +238,16 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
             className="flex-1 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
             Retry Step
+          </button>
+        )}
+
+        {/* Complete Record Button: visible only when all steps completed */}
+        {allStepsCompleted && !isCapturing && (
+          <button
+            onClick={() => onCompleteRecord?.()}
+            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+          >
+            Complete Record
           </button>
         )}
       </div>

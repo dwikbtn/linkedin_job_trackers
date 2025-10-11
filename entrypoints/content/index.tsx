@@ -22,6 +22,8 @@ export default defineContentScript({
       position: "inline",
       anchor: "body",
       append: "first",
+      mode: "closed",
+      inheritStyles: false,
       onMount(container) {
         // Define how your UI will be mounted inside the container
         const app = document.createElement("div");
