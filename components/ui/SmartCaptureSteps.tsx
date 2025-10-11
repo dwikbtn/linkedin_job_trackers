@@ -75,16 +75,18 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
       {/* Progress Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold text-gray-900">Smart Capture</h3>
-          <span className="text-sm text-gray-500">
+          <h3 className="text-lg font-semibold text-stone-800">
+            Smart Capture
+          </h3>
+          <span className="text-sm text-stone-500">
             Step {currentStepIndex + 1} of {steps.length}
           </span>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-stone-200 rounded-full h-2">
           <div
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            className="bg-amber-700 h-2 rounded-full transition-all duration-300"
             style={{
               width: `${((currentStepIndex + 1) / steps.length) * 100}%`,
             }}
@@ -101,22 +103,22 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
           return (
             <div
               key={step.id}
-              className={`flex items-start space-x-3 p-3 rounded-lg border transition-all ${
+              className={`flex items-start space-x-3 p-3 rounded-xl border transition-all shadow-sm ${
                 isActive
-                  ? "border-blue-300 bg-blue-50"
+                  ? "border-amber-300 bg-amber-50"
                   : status === "completed"
-                  ? "border-green-300 bg-green-50"
-                  : "border-gray-200 bg-gray-50"
+                  ? "border-stone-200 bg-stone-50"
+                  : "border-stone-200 bg-white"
               }`}
             >
               {/* Step Icon/Status */}
               <div
                 className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   status === "completed"
-                    ? "bg-green-600 text-white"
+                    ? "bg-amber-600 text-white"
                     : isActive
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-300 text-gray-600"
+                    ? "bg-amber-700 text-white"
+                    : "bg-stone-300 text-stone-700"
                 }`}
               >
                 {status === "completed" ? (
@@ -141,10 +143,10 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
                 <h4
                   className={`text-sm font-medium ${
                     isActive
-                      ? "text-blue-900"
+                      ? "text-amber-900"
                       : status === "completed"
-                      ? "text-green-900"
-                      : "text-gray-700"
+                      ? "text-stone-800"
+                      : "text-stone-700"
                   }`}
                 >
                   {step.title}
@@ -152,10 +154,10 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
                 <p
                   className={`text-xs mt-1 ${
                     isActive
-                      ? "text-blue-700"
+                      ? "text-amber-700"
                       : status === "completed"
-                      ? "text-green-700"
-                      : "text-gray-500"
+                      ? "text-stone-600"
+                      : "text-stone-500"
                   }`}
                 >
                   {step.description}
@@ -163,7 +165,7 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
 
                 {/* Show captured data if completed */}
                 {status === "completed" && capturedData[step.id] && (
-                  <div className="mt-2 text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                  <div className="mt-2 text-xs text-amber-800 bg-amber-100 px-2 py-1 rounded-lg border border-amber-200">
                     ✓ Captured: "{capturedData[step.id]?.text}"
                   </div>
                 )}
@@ -175,14 +177,14 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
 
       {/* Current Step Instructions */}
       {currentStepData && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
           <div className="flex items-center space-x-2 mb-2">
             <span className="text-2xl">{currentStepData.icon}</span>
-            <h4 className="font-medium text-blue-900">
+            <h4 className="font-medium text-amber-900">
               {currentStepData.title}
             </h4>
           </div>
-          <p className="text-sm text-blue-700 mb-3">
+          <p className="text-sm text-amber-700 mb-3">
             {currentStepData.instruction}
           </p>
 
@@ -190,8 +192,8 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
             <div className="flex items-center space-x-2">
               {isCapturing ? (
                 <>
-                  <div className="animate-pulse w-2 h-2 bg-blue-600 rounded-full"></div>
-                  <span className="text-xs text-blue-600">
+                  <div className="animate-pulse w-2 h-2 bg-amber-700 rounded-full"></div>
+                  <span className="text-xs text-amber-700">
                     Waiting for your selection...
                   </span>
                 </>
@@ -199,7 +201,7 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
                 onStartRecord && (
                   <button
                     onClick={onStartRecord}
-                    className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-amber-700 border border-amber-700 rounded-lg hover:bg-amber-800 focus:outline-none focus:ring-3 focus:ring-amber-300 transition-colors"
                   >
                     <svg
                       className="w-3 h-3 mr-1"
@@ -226,7 +228,7 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
         {onCancel && (
           <button
             onClick={onCancel}
-            className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            className="flex-1 px-4 py-2 text-sm font-medium text-stone-700 bg-white border border-stone-200 rounded-xl hover:bg-stone-50 focus:outline-none focus:ring-3 focus:ring-stone-200 transition-colors"
           >
             Cancel
           </button>
@@ -235,7 +237,7 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
         {onRetry && (
           <button
             onClick={onRetry}
-            className="flex-1 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            className="flex-1 px-4 py-2 text-sm font-medium text-stone-800 bg-stone-100 border border-stone-200 rounded-xl hover:bg-stone-200 focus:outline-none focus:ring-3 focus:ring-stone-200 transition-colors"
           >
             Retry Step
           </button>
@@ -245,7 +247,7 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
         {allStepsCompleted && !isCapturing && (
           <button
             onClick={() => onCompleteRecord?.()}
-            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-amber-700 border border-amber-700 rounded-xl hover:bg-amber-800 focus:outline-none focus:ring-3 focus:ring-amber-300 transition-colors shadow-sm"
           >
             Complete Record
           </button>
