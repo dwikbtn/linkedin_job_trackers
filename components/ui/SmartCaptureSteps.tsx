@@ -9,9 +9,9 @@ interface SmartCaptureStepsProps {
   onStartRecord?: () => void;
   onCompleteRecord?: () => void;
   capturedData?: {
-    jobTitle?: { text: string; selector: string };
-    company?: { text: string; selector: string };
-    applyButton?: { text: string; selector: string };
+    jobTitle?: { text: string; selector: SmartCaptureSelector };
+    company?: { text: string; selector: SmartCaptureSelector };
+    applyButton?: { text: string; selector: SmartCaptureSelector };
   };
   isCapturing?: boolean;
 }
@@ -165,7 +165,7 @@ const SmartCaptureSteps: React.FC<SmartCaptureStepsProps> = ({
 
                 {/* Show captured data if completed */}
                 {status === "completed" && capturedData[step.id] && (
-                  <div className="mt-2 text-xs text-amber-800 bg-amber-100 px-2 py-1 rounded-lg border border-amber-200">
+                  <div className="mt-2 text-xs text-amber-800 bg-amber-100 px-2 py-1 rounded-lg border border-amber-200 max-h-24 overflow-y-auto whitespace-pre-wrap break-words">
                     ✓ Captured: "{capturedData[step.id]?.text}"
                   </div>
                 )}

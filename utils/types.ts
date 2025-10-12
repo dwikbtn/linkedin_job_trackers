@@ -9,39 +9,25 @@ export type Job_Application = {
   notes?: string;
 };
 
+export type SmartCaptureSelector = {
+  idName?: string;
+  className: string;
+};
+
 // Smart Capture types
 export interface SmartCaptureMapping {
   domain: string;
-  jobTitleSelector: string;
-  companySelector: string;
-  applyButtonSelector: string;
+  jobTitleSelector: SmartCaptureSelector;
+  companySelector: SmartCaptureSelector;
+  applyButtonSelector: SmartCaptureSelector;
   previewJobTitle: string;
   previewCompany: string;
   createdAt: string;
 }
 
-export interface SmartCaptureStep {
-  id: "jobTitle" | "company" | "applyButton";
-  title: string;
-  description: string;
-  completed: boolean;
-  selector?: string;
-  previewText?: string;
-}
-
-export interface SmartCaptureState {
-  isActive: boolean;
-  currentStep: number;
-  steps: SmartCaptureStep[];
-  selectedElement?: HTMLElement;
-  hoveredElement?: HTMLElement;
-}
-
 export interface ElementInfo {
-  selector: string;
-  element: HTMLElement;
-  text: string;
-  tagName: string;
+  type: "jobTitle" | "company" | "applyButton";
+  selector: SmartCaptureSelector;
 }
 
 export const CONTENT_ROOT_ID = "career-tracker-root";

@@ -1,6 +1,6 @@
 import { storage } from "#imports";
 import { onMessage } from "@/utils/messaging";
-import { JOBAPPLICATIONLIST } from "@/utils/storageName";
+import { SMARTCAPTUREDATA, JOBAPPLICATIONLIST } from "@/utils/storageName";
 import { Job_Application } from "@/utils/types";
 import extractJobIdFromUrl from "@/utils/utils";
 
@@ -28,7 +28,7 @@ export default defineBackground(() => {
   });
 
   // Listen for tab updates (navigation, page loads)
-  browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     // Check if the tab has finished loading and has a URL
     if (changeInfo.status === "complete" && tab.url) {
       // Check if the URL is a LinkedIn page
@@ -40,6 +40,7 @@ export default defineBackground(() => {
           title: tab.title || "Unknown title",
         });
       }
+      await detectJobFromSmartCapture();
     }
   });
 
@@ -48,19 +49,35 @@ export default defineBackground(() => {
     try {
       const tab = await browser.tabs.get(activeInfo.tabId);
       detectJobPostFromCollectionsPage(tab);
-      if (tab.url && tab.url.includes("linkedin.com")) {
-        console.log("LinkedIn tab activated!", {
-          url: tab.url,
-          tabId: activeInfo.tabId,
-          title: tab.title || "Unknown title",
-        });
-      }
+      await detectJobFromSmartCapture();
     } catch (error) {
       // Handle case where tab might not be accessible
       console.log("Could not access tab info:", error);
     }
   });
 });
+
+// Normalize and extract bare domain from a URL or hostname
+function extractDomain(input?: string | null): string | null {
+  if (!input) return null;
+  try {
+    // If it's a full URL, URL() will parse; if it's just a hostname, prepend protocol
+    const url = input.includes("://")
+      ? new URL(input)
+      : new URL(`https://${input}`);
+    let host = url.hostname.toLowerCase();
+    if (host.startsWith("www.")) host = host.slice(4);
+    return host;
+  } catch {
+    // Fallback: very simple cleanup
+    let host = input.toLowerCase();
+    if (host.startsWith("www.")) host = host.slice(4);
+    // Strip path if someone passed a URL-like string without protocol
+    const slash = host.indexOf("/");
+    if (slash !== -1) host = host.slice(0, slash);
+    return host || null;
+  }
+}
 
 //msg listener
 onMessage("getApplications", async () => {
@@ -111,6 +128,54 @@ onMessage("deleteApplication", async (msg) => {
   }
 });
 
+onMessage("saveElements", async (msg) => {
+  const elements = msg.data;
+
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  const domainOnly = extractDomain(tab?.url) || "unknown";
+  const smartCaptureMapping: SmartCaptureMapping = {
+    domain: domainOnly,
+    jobTitleSelector: {
+      idName:
+        elements.find((el) => el.type === "jobTitle")?.selector.idName || "",
+      className:
+        elements.find((el) => el.type === "jobTitle")?.selector.className || "",
+    },
+    companySelector: {
+      idName:
+        elements.find((el) => el.type === "company")?.selector.idName || "",
+      className:
+        elements.find((el) => el.type === "company")?.selector.className || "",
+    },
+    applyButtonSelector: {
+      idName:
+        elements.find((el) => el.type === "applyButton")?.selector.idName || "",
+      className:
+        elements.find((el) => el.type === "applyButton")?.selector.className ||
+        "",
+    },
+    previewJobTitle: "",
+    previewCompany: "",
+    createdAt: new Date().toISOString(),
+  };
+  const currentMappings = (await storage.getItem(
+    `local:${SMARTCAPTUREDATA}`
+  )) as SmartCaptureMapping[] | undefined;
+
+  const updatedMappings = currentMappings
+    ? [
+        ...currentMappings.filter(
+          (mapping) => mapping.domain !== smartCaptureMapping.domain
+        ),
+        smartCaptureMapping,
+      ]
+    : [smartCaptureMapping];
+
+  console.log("Saving updated mappings:", updatedMappings);
+  await storage.setItem(`local:${SMARTCAPTUREDATA}`, updatedMappings);
+  await detectJobFromSmartCapture();
+});
+
 async function initStorage() {
   // Initialize storage with default values
   const jobApplications = (await storage.getItem(
@@ -139,6 +204,42 @@ function detectJobPostFromCollectionsPage(tab: Browser.tabs.Tab) {
     // Send message to content script to fetch job details
     sendMessage("CSgetDataFromJobCollection", undefined, tab.id);
   }
+}
+
+async function detectJobFromSmartCapture() {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  const smartCaptureStorage = (await storage.getItem(
+    `local:${SMARTCAPTUREDATA}`
+  )) as SmartCaptureMapping[] | undefined;
+
+  // Check if there's a mapping for the current domain
+  if (
+    tab.url &&
+    smartCaptureStorage &&
+    (() => {
+      const currentDomain = extractDomain(tab.url);
+      return currentDomain
+        ? smartCaptureStorage.some(
+            (m) => extractDomain(m.domain) === currentDomain
+          )
+        : false;
+    })()
+  ) {
+    console.log("Smart Capture mapping found for this domain.");
+    const currentDomain = extractDomain(tab.url);
+    const mapping = smartCaptureStorage.find(
+      (m) => extractDomain(m.domain) === currentDomain
+    );
+    if (mapping && tab.id) {
+      sendMessage("CSGetSmartCaptureMappings", mapping, tab.id);
+      console.log(
+        "Sent Smart Capture mapping to content script for domain:",
+        currentDomain
+      );
+    }
+  }
+  console.log(smartCaptureStorage);
+  console.log(tab.url);
 }
 
 //NOTE: HOW TO RECORD SMART CAPTURE STEPS

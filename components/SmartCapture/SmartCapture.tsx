@@ -4,24 +4,29 @@ import Modal from "../ui/Modal";
 import SmartCaptureExplanation from "../ui/SmartCaptureExplanation";
 // Note: Not wired. Example usage of the hover capture utility:
 import enableHoverCapture from "@/utils/hoverCapture";
+import { sendMessage } from "@/utils/messaging";
+import type { SmartCaptureSelector } from "@/utils/types";
 
-const SmartCapture = () => {
-  const [isOpen, setIsOpen] = React.useState(true);
+const SmartCapture = ({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}) => {
   const [startStep, setStartStep] = React.useState(false);
   const [currentStep, setCurrentStep] = React.useState<
     "jobTitle" | "company" | "applyButton"
   >("jobTitle");
 
   const [capturedData, setCapturedData] = React.useState<{
-    jobTitle?: { text: string; selector: string };
-    company?: { text: string; selector: string };
-    applyButton?: { text: string; selector: string };
+    jobTitle?: { text: string; selector: SmartCaptureSelector };
+    company?: { text: string; selector: SmartCaptureSelector };
+    applyButton?: { text: string; selector: SmartCaptureSelector };
   }>({});
 
   const [isCapturing, setIsCapturing] = React.useState(false);
 
-  console.log(capturedData);
-  console.log(currentStep);
   // Example: How to invoke hover capture (do not enable by default)
   const startHoverPick = React.useCallback(() => {
     setIsCapturing(true);
@@ -30,14 +35,21 @@ const SmartCapture = () => {
     setIsOpen(false);
     const stop = enableHoverCapture({
       onClick: (el) => {
-        console.log("[SmartCapture Demo] Picked element:", el);
+        // console.log("[SmartCapture Demo] Picked element:", el.getAttribute());
+        //log classname and if there's id
+        console.log("[SmartCapture Demo] Picked class:", el.className);
+        console.log("[SmartCapture Demo] Picked id:", el.id);
         console.log("[SmartCapture Demo] Picked text:", el.innerText?.trim());
-        console.log(currentStep);
+
         setCapturedData((prev) => ({
           ...prev,
           [currentStep]: {
             text: el.innerText?.trim(),
-            selector: el.getAttribute("data-selector"),
+            selector: {
+              // Ensure we always store strings as required by SmartCaptureSelector
+              idName: el.id,
+              className: el.className,
+            },
           },
         }));
 
@@ -47,9 +59,6 @@ const SmartCapture = () => {
             : currentStep === "company"
             ? "applyButton"
             : null;
-
-        console.log("currentStep:", currentStep);
-        console.log("Next step:", nextStep);
         if (nextStep) {
           setCurrentStep(nextStep);
         }
@@ -63,6 +72,40 @@ const SmartCapture = () => {
       },
     });
   }, [currentStep]);
+
+  function handleOnComplete() {
+    sendMessage("saveElements", [
+      {
+        type: "jobTitle",
+        selector: {
+          idName: capturedData.jobTitle?.selector.idName,
+          className: capturedData.jobTitle?.selector.className ?? "",
+        },
+      },
+      {
+        type: "company",
+        selector: {
+          idName: capturedData.company?.selector.idName,
+          className: capturedData.company?.selector.className ?? "",
+        },
+      },
+      {
+        type: "applyButton",
+        selector: {
+          idName: capturedData.applyButton?.selector.idName,
+          className: capturedData.applyButton?.selector.className ?? "",
+        },
+      },
+    ]);
+
+    setIsOpen(false);
+    setStartStep(false);
+    setCurrentStep("jobTitle");
+    setCapturedData({});
+    setIsCapturing(false);
+  }
+
+  console.log("SmartCapture render, isOpen:", isOpen);
 
   return (
     <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
@@ -80,7 +123,7 @@ const SmartCapture = () => {
           capturedData={capturedData}
           isCapturing={isCapturing}
           onStartRecord={() => startHoverPick()}
-          onCompleteRecord={() => setIsOpen(false)}
+          onCompleteRecord={() => handleOnComplete()}
         />
       )}
     </Modal>
